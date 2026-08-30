@@ -1,10 +1,8 @@
 import '../../../../core/result/result.dart';
-import '../entities/example_entity.dart';
+import '../entities/profile_entity.dart';
 
-/// Contract repository. Domain layer tidak boleh mengimpor Supabase.
-abstract interface class ExampleRepository {
-  Future<Result<List<ExampleEntity>>> getAll();
-
-  // TODO: Tambahkan contract create/update/delete bila diperlukan.
+abstract interface class ProfileRepository {
+  Future<Result<ProfileEntity?>> getMine();
+  Future<Result<ProfileEntity>> create(ProfileEntity profile);
+  Future<Result<ProfileEntity>> updateMine(ProfileEntity profile);
 }
-

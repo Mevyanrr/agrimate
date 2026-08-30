@@ -1,23 +1,36 @@
-import '../../domain/entities/example_entity.dart';
+import '../../domain/entities/profile_entity.dart';
 
-/// Model bertanggung jawab mengubah response Supabase menjadi entity.
-class ExampleModel extends ExampleEntity {
-  const ExampleModel({required super.id, required super.name});
+class ProfileModel extends ProfileEntity {
+  const ProfileModel({
+    required super.id,
+    required super.fullName,
+    required super.role,
+    super.businessName,
+  });
 
-  factory ExampleModel.fromJson(Map<String, dynamic> json) {
-    return ExampleModel(
-      // TODO: Samakan key berikut dengan nama kolom tabel Supabase.
-      id: json['id'] as String,
-      name: json['name'] as String,
+  factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    return ProfileModel(
+      id: json['id'].toString(),
+      fullName: json['full_name'] as String,
+      role: switch (json['role'] as String) {
+        'FARMER' => UserRole.farmer,
+        'BUYER' => UserRole.buyer,
+        final value => throw FormatException('Role tidak dikenal: $value'),
+      },
+      businessName: json['business_name'] as String?,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      // TODO: Jangan kirim `id` jika ID dibuat otomatis oleh database.
-      'id': id,
-      'name': name,
-    };
-  }
-}
+  Map<String, dynamic> toCreateJson() => {
+    'id': id,
+    'full_name': fullName,
+    'role': role == UserRole.farmer ? 'FARMER' : 'BUYER',
+    'business_name': businessName,
+  };
 
+  /// Role dan ID sengaja tidak dapat diubah dari update profile biasa.
+  Map<String, dynamic> toEditableJson() => {
+    'full_name': fullName,
+    'business_name': businessName,
+  };
+}

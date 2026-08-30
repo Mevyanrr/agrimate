@@ -1,9 +1,15 @@
-/// Entity berisi data yang dibutuhkan aturan bisnis, bukan detail Supabase.
-class ExampleEntity {
-  const ExampleEntity({required this.id, required this.name});
+enum UserRole { farmer, buyer }
 
-  // TODO: Sesuaikan field dengan kebutuhan feature kamu.
+class ProfileEntity {
+  const ProfileEntity({
+    required this.id,
+    required this.fullName,
+    required this.role,
+    this.businessName,
+  });
+
   final String id;
-  final String name;
+  final String fullName;
+  final UserRole role;
+  final String? businessName;
 }
-
