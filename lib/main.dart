@@ -1,3 +1,7 @@
+import 'package:agrimate/role_selection/view/role.dart';
+import 'package:agrimate/role_selection/viewmodel/role_vm.dart';
+import 'package:agrimate/splash_onboarding/view/onboarding.dart';
+import 'package:agrimate/splash_onboarding/viewmodel/onboarding_vm.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,6 +25,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<SplashViewModel>(
           create: (_) => SplashViewModel(),
         ),
+         ChangeNotifierProvider<OnboardingViewModel>(create: (_) => OnboardingViewModel()),
+         ChangeNotifierProvider<RoleViewModel>(create: (_) => RoleViewModel()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(360, 844), 
@@ -35,7 +41,8 @@ class MyApp extends StatelessWidget {
             routes: {
               '/splash1': (context) => const SplashPage1(),
               '/splash2': (context) => const SplashPage2(),
-              // '/home': (context) => const HomePage(),
+              '/onboarding': (context) => const OnboardingView(),
+              '/role-selection': (context) => const RoleView(),
             },
           );
         },

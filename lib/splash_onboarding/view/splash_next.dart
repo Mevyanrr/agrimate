@@ -18,7 +18,7 @@ class _SplashPage2State extends State<SplashPage2> {
       context.read<SplashViewModel>().startTimer(
             context: context,
             duration: const Duration(seconds: 2),
-            nextRoute: '/home',
+            nextRoute: '/onboarding',
           );
     });
   }

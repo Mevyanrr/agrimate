@@ -32,4 +32,11 @@ flutter:
   assets:
      - assets/images/logo_withname.png
      - assets/images/logo_withoutname.png
-
+     - assets/images/onboarding1.png
+     - assets/images/onboarding2.png
+     - assets/images/onboarding3.png
+     - assets/icons/paddy.svg
+     - assets/icons/checked.svg
+     - assets/icons/handshake.svg
+     - assets/icons/tea.svg
+     - assets/icons/store.svg
