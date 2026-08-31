@@ -2,7 +2,6 @@ import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/splash_onboarding/model/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/onboarding_vm.dart';
 
@@ -130,7 +129,7 @@ class _OnboardingSlide extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(12.w),
-                    child: SvgPicture.asset(
+                    child: Image.asset(
     data.iconPath,
     fit: BoxFit.contain,
     width: 33.w,

@@ -2,7 +2,6 @@ import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/role_vm.dart';
 
@@ -139,16 +138,12 @@ class _RoleCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Container(
-                //   width: 56.w,
-                //   height: 56.w,
-                //   decoration: const BoxDecoration(shape: BoxShape.circle),
-                //   child: SvgPicture.asset(role.iconPath, fit: BoxFit.contain, width: 62.w, height: 62.w),
-                // ),
-              SvgPicture.asset(
-  'assets/icons/tea.svg',
-),
-
+                 Container(
+                   width: 56.w,
+                   height: 56.w,
+                   decoration: const BoxDecoration(shape: BoxShape.circle),
+                   child: Image.asset(role.iconPath, fit: BoxFit.contain, width: 62.w, height: 62.w),
+                 ),
                 SizedBox(height: 12.h),
 
                 Text(

@@ -10,7 +10,7 @@ class OnboardingViewModel extends ChangeNotifier {
   final List<OnboardingModel> pages = const [
     OnboardingModel(
       imagePath: 'assets/images/onboarding1.png',
-      iconPath: 'assets/icons/tea.svg',
+      iconPath: 'assets/images/paddy.png',
       title: 'Ceritakan\nRencana Panenmu',
       description:
           'Estimasi hasil panenmu sebelum waktunya tiba. Tanpa antri, tanpa ribet.',
@@ -18,7 +18,7 @@ class OnboardingViewModel extends ChangeNotifier {
     ),
     OnboardingModel(
       imagePath: 'assets/images/onboarding2.png',
-      iconPath: 'assets/icons/handshake.svg', 
+      iconPath: 'assets/images/handshake.png', 
       title: 'Kami Carikan\nPembeli yang Cocok',
       description:
           'Sistem kami otomatis mencocokan hasil panenmu dengan pembeli yang membutuhkan',
@@ -26,7 +26,7 @@ class OnboardingViewModel extends ChangeNotifier {
     ),
     OnboardingModel(
       imagePath: 'assets/images/onboarding3.png',
-      iconPath: 'assets/icons/checked.svg',
+      iconPath: 'assets/images/checked.png',
       title: 'Ceritakan\nRencana Panenmu',
       description:
           'Pilih yang cocok dan setujui kesepakatan, terima pesanan, pesanan akan diproses.',

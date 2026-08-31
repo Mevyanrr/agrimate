@@ -7,7 +7,7 @@ class RoleViewModel extends ChangeNotifier {
   final List<RoleModel> roles = const [
     RoleModel(
       id: UserRole.petani,
-      iconPath: 'assets/icons/tea.svg',
+      iconPath: 'assets/images/tea.png',
       title: 'Saya Petani',
       description:
           'Isi rencana panen, kami akan membantu mencarikan pembeli yang cocok',
@@ -16,7 +16,7 @@ class RoleViewModel extends ChangeNotifier {
     ),
     RoleModel(
       id: UserRole.pembeli,
-      iconPath: 'assets/icons/store.svg',
+      iconPath: 'assets/images/store.png',
       title: 'Saya Pembeli',
       description:
           'Pemilik restoran, distributor, atau catering yang membutuhkan pasokan rutin',
@@ -41,8 +41,6 @@ class RoleViewModel extends ChangeNotifier {
   bool isSelected(UserRole role) => _selectedRole == role;
 
   void onNextPressed(BuildContext context) {
-    final nextRoute =
-        _selectedRole == UserRole.petani ? '/home-petani' : '/home-pembeli';
-    Navigator.pushReplacementNamed(context, nextRoute);
-  }
+  Navigator.pushNamed(context, '/login', arguments: _selectedRole);
+}
 }
