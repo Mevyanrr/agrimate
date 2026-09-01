@@ -126,7 +126,9 @@ class _OtpBody extends StatelessWidget {
                       : () => vm.onVerifyPressed(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: vm.accentColor,
-                    disabledBackgroundColor: vm.accentColor.withOpacity(0.4),
+                    disabledBackgroundColor: vm.accentColor.withValues(
+                      alpha: 0.4,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16.r),

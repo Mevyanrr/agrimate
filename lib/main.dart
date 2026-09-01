@@ -21,7 +21,7 @@ Future<void> main() async {
   await dotenv.load();
   await Supabase.initialize(
     url: dotenv.get('SUPABASE_URL'),
-    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+    publishableKey: dotenv.get('SUPABASE_ANON_KEY'),
   );
   runApp(const MyApp());
 }

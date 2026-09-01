@@ -21,5 +21,5 @@ class AppColors {
 
   static const Color indicatorInactive = Color(0xFFE2E5E9); 
 
-  static Color shadowLight = Colors.black.withOpacity(0.08); 
+  static Color shadowLight = Colors.black.withValues(alpha: 0.08);
 }
