@@ -23,7 +23,8 @@ class OtpVerificationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => OtpViewModel(role: role, phoneNumber: phoneNumber, method: method),
+      create: (_) =>
+          OtpViewModel(role: role, phoneNumber: phoneNumber, method: method),
       child: const _OtpBody(),
     );
   }
@@ -49,7 +50,10 @@ class _OtpBody extends StatelessWidget {
               GestureDetector(
                 onTap: () => vm.onBackPressed(context),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 8.h,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30.r),
                     border: Border.all(color: AppColors.borderDefault),
@@ -57,7 +61,11 @@ class _OtpBody extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.arrow_back, size: 16.sp, color: AppColors.textPrimary),
+                      Icon(
+                        Icons.arrow_back,
+                        size: 16.sp,
+                        color: AppColors.textPrimary,
+                      ),
                       SizedBox(width: 6.w),
                       Text(
                         'Kembali ke Daftar',
@@ -74,7 +82,10 @@ class _OtpBody extends StatelessWidget {
               SizedBox(height: 24.h),
 
               Center(
-                child: Image.asset('assets/images/logo_withname.png', width: 130.w),
+                child: Image.asset(
+                  'assets/images/logo_withname.png',
+                  width: 130.w,
+                ),
               ),
               SizedBox(height: 32.h),
 
@@ -89,15 +100,24 @@ class _OtpBody extends StatelessWidget {
               SizedBox(height: 8.h),
               RichText(
                 text: TextSpan(
-                  style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary, height: 1.4),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
                   children: [
                     const TextSpan(text: 'Masukkan '),
                     const TextSpan(
-                      text: '4 digit kode',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      text: '6 digit kode',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     TextSpan(
-                        text: ' yang telah kami kirimkan ke nomor ${vm.phoneNumber}'),
+                      text:
+                          ' yang telah kami kirimkan ke nomor ${vm.phoneNumber}',
+                    ),
                   ],
                 ),
               ),
@@ -139,7 +159,9 @@ class _OtpBody extends StatelessWidget {
                           width: 22.w,
                           height: 22.w,
                           child: const CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5),
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
                         )
                       : Text(
                           'Verifikasi',
@@ -156,12 +178,18 @@ class _OtpBody extends StatelessWidget {
               Center(
                 child: RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       const TextSpan(text: 'Belum menerima kode? '),
                       TextSpan(
                         text: 'Kirim Ulang',
-                        style: TextStyle(color: vm.accentColor, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: vm.accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () => vm.onResendPressed(context),
                       ),
@@ -173,12 +201,18 @@ class _OtpBody extends StatelessWidget {
               Center(
                 child: RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       const TextSpan(text: 'Atau '),
                       TextSpan(
                         text: 'Gunakan Cara Lain',
-                        style: TextStyle(color: vm.accentColor, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: vm.accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () => vm.onUseAnotherMethodPressed(context),
                       ),
@@ -212,8 +246,8 @@ class _OtpBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 68.w,
-      height: 68.w,
+      width: 48.w,
+      height: 58.w,
       child: TextField(
         controller: controller,
         focusNode: focusNode,

@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'features/auth/data/auth_repository_impl.dart';
+import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/commodities/data/datasources/commodity_remote_data_source.dart';
 import 'features/commodities/data/repositories/commodity_repository_impl.dart';
 import 'features/commodities/domain/repositories/commodity_repository.dart';
@@ -22,9 +24,16 @@ import 'features/transactions/data/datasources/transaction_remote_data_source.da
 /// Composition root backend. Semua dependency feature dirangkai di sini.
 class BackendDependencies {
   BackendDependencies._(SupabaseClient client)
-    : commodityRepository = CommodityRepositoryImpl(SupabaseCommodityRemoteDataSource(client)),
-      supplyRepository = SupplyRepositoryImpl(SupabaseSupplyRemoteDataSource(client)),
-      demandRepository = DemandRepositoryImpl(SupabaseDemandRemoteDataSource(client)),
+    : authRepository = SupabaseAuthRepository(client),
+      commodityRepository = CommodityRepositoryImpl(
+        SupabaseCommodityRemoteDataSource(client),
+      ),
+      supplyRepository = SupplyRepositoryImpl(
+        SupabaseSupplyRemoteDataSource(client),
+      ),
+      demandRepository = DemandRepositoryImpl(
+        SupabaseDemandRemoteDataSource(client),
+      ),
       profileRepository = ProfileRepositoryImpl(
         SupabaseProfileRemoteDataSource(client),
       ),
@@ -39,6 +48,7 @@ class BackendDependencies {
     return BackendDependencies._(Supabase.instance.client);
   }
 
+  final AuthRepository authRepository;
   final CommodityRepository commodityRepository;
   final SupplyRepository supplyRepository;
   final DemandRepository demandRepository;
@@ -47,5 +57,4 @@ class BackendDependencies {
   final MatchRemoteDataSource matches;
   final TransactionRemoteDataSource transactions;
   final NotificationRemoteDataSource notifications;
-
 }

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 Future<OtpMethod?> showOtpMethodSheet(
   BuildContext context, {
+  required String phoneNumber,
   required Color accentColor,
   required Color accentColorLight,
 }) {
@@ -12,18 +13,24 @@ Future<OtpMethod?> showOtpMethodSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => _OtpMethodSheetContent(accentColor: accentColor, accentColorLight: accentColorLight),
+    builder: (context) => _OtpMethodSheetContent(
+      phoneNumber: phoneNumber,
+      accentColor: accentColor,
+      accentColorLight: accentColorLight,
+    ),
   );
 }
 
 class _OtpMethodSheetContent extends StatelessWidget {
+  final String phoneNumber;
   final Color accentColor;
   final Color accentColorLight;
 
   const _OtpMethodSheetContent({
+    required this.phoneNumber,
     required this.accentColor,
     required this.accentColorLight,
-      });
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +89,19 @@ class _OtpMethodSheetContent extends StatelessWidget {
               children: [
                 Text(
                   'Kami akan mengirimkan kode OTP 4 digit ke nomor berikut:',
-                  style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 SizedBox(height: 12.h),
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   decoration: BoxDecoration(
                     color: accentColor,
                     borderRadius: BorderRadius.circular(12.r),
@@ -98,17 +111,24 @@ class _OtpMethodSheetContent extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.phone, color: Colors.white, size: 14),
+                          const Icon(
+                            Icons.phone,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                           SizedBox(width: 6.w),
                           Text(
                             'Nomor Tujuan',
-                            style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11.sp,
+                            ),
                           ),
                         ],
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '+62 812 •••• ••42', 
+                        phoneNumber,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16.sp,
@@ -144,7 +164,10 @@ class _OtpMethodSheetContent extends StatelessWidget {
 
                 Text(
                   'Pastikan nomor yang Anda masukkan aktif dan dapat menerima OTP.',
-                  style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -188,7 +211,11 @@ class _MethodTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10.r),
               ),
               padding: EdgeInsets.all(8.w),
-              child: Image.asset(option.iconPath, fit: BoxFit.contain, color: accentColor,),
+              child: Image.asset(
+                option.iconPath,
+                fit: BoxFit.contain,
+                color: accentColor,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -206,12 +233,19 @@ class _MethodTile extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     option.description,
-                    style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20.sp),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary,
+              size: 20.sp,
+            ),
           ],
         ),
       ),

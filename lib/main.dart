@@ -1,5 +1,6 @@
 import 'package:agrimate/auth/model/otp.dart';
 import 'package:agrimate/auth/view/daftar_akun.dart';
+import 'package:agrimate/auth/view/authenticated_home.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
 import 'package:agrimate/role_selection/model/role.dart';
@@ -57,22 +58,29 @@ class MyApp extends StatelessWidget {
               '/onboarding': (context) => const OnboardingView(),
               '/role-selection': (context) => const RoleView(),
               '/login': (context) {
-                final role = ModalRoute.of(context)!.settings.arguments as UserRole;
+                final role =
+                    ModalRoute.of(context)!.settings.arguments as UserRole;
                 return LoginView(role: role);
               },
               '/register': (context) {
-                final role = ModalRoute.of(context)!.settings.arguments as UserRole;
+                final role =
+                    ModalRoute.of(context)!.settings.arguments as UserRole;
                 return RegisterView(role: role);
               },
               '/otp-verification': (context) {
-                final args = ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>;
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
                 return OtpVerificationView(
                   role: args['role'] as UserRole,
                   phoneNumber: args['phoneNumber'] as String,
                   method: args['method'] as OtpMethod,
                 );
               },
+              '/home-petani': (context) =>
+                  const AuthenticatedHomeView(role: UserRole.petani),
+              '/home-pembeli': (context) =>
+                  const AuthenticatedHomeView(role: UserRole.pembeli),
             },
           );
         },

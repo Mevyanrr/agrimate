@@ -1,12 +1,16 @@
 import 'package:agrimate/auth/model/daftar_akun.dart';
 import 'package:agrimate/auth/model/otp.dart';
 import 'package:agrimate/auth/view/otp_sheet.dart';
+import 'package:agrimate/backend/backend_dependencies.dart';
+import 'package:agrimate/backend/core/errors/backend_exception.dart';
+import 'package:agrimate/backend/features/auth/domain/entities/auth_registration.dart';
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final UserRole role;
+  late final _authRepository = BackendDependencies.create().authRepository;
 
   RegisterViewModel({required this.role});
 
@@ -14,7 +18,8 @@ class RegisterViewModel extends ChangeNotifier {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   bool _obscurePassword = true;
   bool get obscurePassword => _obscurePassword;
@@ -50,7 +55,12 @@ class RegisterViewModel extends ChangeNotifier {
     final isValid = formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
-    final method = await showOtpMethodSheet(context, accentColor: accentColor, accentColorLight: accentColorLight);
+    final method = await showOtpMethodSheet(
+      context,
+      phoneNumber: phoneController.text.trim(),
+      accentColor: accentColor,
+      accentColorLight: accentColorLight,
+    );
     if (method == null) return;
     if (!context.mounted) return;
 
@@ -70,23 +80,48 @@ class RegisterViewModel extends ChangeNotifier {
       confirmPassword: confirmPasswordController.text,
     );
 
-    await Future.delayed(const Duration(milliseconds: 800));
-    debugPrint(
-        'Kirim OTP via ${method.name} ke ${request.phoneNumber} (role: $roleLabel)');
+    try {
+      final result = await _authRepository.register(
+        AuthRegistration(
+          phone: request.phoneNumber,
+          password: request.password,
+          email: request.email,
+          role: isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
+          channel: method == OtpMethod.whatsapp
+              ? AuthOtpChannel.whatsapp
+              : AuthOtpChannel.sms,
+        ),
+      );
+      if (!context.mounted) return;
+      if (result.requiresOtp) {
+        Navigator.pushNamed(
+          context,
+          '/otp-verification',
+          arguments: {
+            'role': role,
+            'phoneNumber': request.phoneNumber,
+            'method': method,
+          },
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          isPetani ? '/home-petani' : '/home-pembeli',
+          (route) => false,
+        );
+      }
+    } on BackendException catch (error) {
+      if (context.mounted) _showError(context, error.message);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
-    _isLoading = false;
-    notifyListeners();
-
-    if (!context.mounted) return;
-    Navigator.pushNamed(
-      context,
-      '/otp-verification',
-      arguments: {
-        'role': role,
-        'phoneNumber': request.phoneNumber,
-        'method': method,
-      },
-    );
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   void onLoginHerePressed(BuildContext context) {

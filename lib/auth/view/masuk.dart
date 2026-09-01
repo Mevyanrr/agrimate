@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agrimate/auth/viewmodel/masuk_vm.dart';
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/role_selection/model/role.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginView extends StatelessWidget {
   final UserRole role;
@@ -20,8 +23,33 @@ class LoginView extends StatelessWidget {
   }
 }
 
-class _LoginBody extends StatelessWidget {
+class _LoginBody extends StatefulWidget {
   const _LoginBody();
+
+  @override
+  State<_LoginBody> createState() => _LoginBodyState();
+}
+
+class _LoginBodyState extends State<_LoginBody> {
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      state,
+    ) {
+      if (state.event == AuthChangeEvent.signedIn && mounted) {
+        context.read<LoginViewModel>().onSocialLoginCompleted(context);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +72,11 @@ class _LoginBody extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.arrow_back, size: 18.sp, color: AppColors.textPrimary),
+                      Icon(
+                        Icons.arrow_back,
+                        size: 18.sp,
+                        color: AppColors.textPrimary,
+                      ),
                       SizedBox(width: 6.w),
                       Text(
                         'Kembali',
@@ -79,10 +111,15 @@ class _LoginBody extends StatelessWidget {
 
                 RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       const TextSpan(
-                          text: 'Masuk ke akun AgriMate-mu dan mulai bertransaksi sebagai '),
+                        text:
+                            'Masuk ke akun AgriMate-mu dan mulai bertransaksi sebagai ',
+                      ),
                       TextSpan(
                         text: vm.roleLabel,
                         style: TextStyle(
@@ -124,7 +161,10 @@ class _LoginBody extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
                       child: Text(
                         'atau dengan WhatsApp / Email',
-                        style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     Expanded(child: Divider(color: AppColors.borderDefault)),
@@ -183,7 +223,9 @@ class _LoginBody extends StatelessWidget {
                   width: double.infinity,
                   height: 52.h,
                   child: ElevatedButton(
-                    onPressed: vm.isLoading ? null : () => vm.onLoginPressed(context),
+                    onPressed: vm.isLoading
+                        ? null
+                        : () => vm.onLoginPressed(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: vm.accentColor,
                       elevation: 0,
@@ -212,7 +254,11 @@ class _LoginBody extends StatelessWidget {
                                 ),
                               ),
                               SizedBox(width: 8.w),
-                              const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+                              const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                             ],
                           ),
                   ),
@@ -222,7 +268,10 @@ class _LoginBody extends StatelessWidget {
                 Center(
                   child: RichText(
                     text: TextSpan(
-                      style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.textSecondary,
+                      ),
                       children: [
                         const TextSpan(text: 'Belum punya akun? '),
                         TextSpan(
