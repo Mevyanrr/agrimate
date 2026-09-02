@@ -24,7 +24,7 @@ class AppBottomNav extends StatelessWidget {
       BottomNavItemData(icon: Icons.home_rounded, label: 'Beranda'),
       BottomNavItemData(icon: Icons.storefront_rounded, label: 'Pasar'),
       BottomNavItemData(icon: Icons.add, label: 'Rencana'), 
-      BottomNavItemData(icon: Icons.receipt_long_rounded, label: 'Transaksi'),
+      BottomNavItemData(icon: Icons.receipt_long, label: 'Transaksi'),
       BottomNavItemData(icon: Icons.person_rounded, label: 'Profil'),
     ],
   });
@@ -39,7 +39,6 @@ class AppBottomNav extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.bottomCenter,
         children: [
-          // Bar putih dasar
           Container(
             height: 68.h,
             decoration: BoxDecoration(
@@ -69,7 +68,6 @@ class AppBottomNav extends StatelessWidget {
             ),
           ),
 
-          // Tombol tengah — elevated bulat
           Positioned(
             top: 0,
             child: GestureDetector(
@@ -96,7 +94,7 @@ class AppBottomNav extends StatelessWidget {
                   Text(
                     items[_centerIndex].label,
                     style: TextStyle(
-                      fontSize: 11.sp,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: currentIndex == _centerIndex
                           ? accentColor
@@ -135,11 +133,11 @@ class _NavItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(data.icon, color: color, size: 22.sp),
-          SizedBox(height: 4.h),
+          Icon(data.icon, color: color, size: 26.sp),
+          // SizedBox(height: 4.h),
           Text(
             data.label,
-            style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),

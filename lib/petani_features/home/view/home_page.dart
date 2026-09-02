@@ -37,27 +37,122 @@ class _HomeBody extends StatelessWidget {
         child: Builder(
           builder: (context) {
             if (vm.state == HomeLoadState.loading) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.greenprimary));
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.greenprimary),
+              );
             }
             if (vm.state == HomeLoadState.error) {
-              return _ErrorState(message: vm.errorMessage ?? 'Terjadi kesalahan', onRetry: vm.fetchHomeData);
+              return _ErrorState(
+                message: vm.errorMessage ?? 'Terjadi kesalahan',
+                onRetry: vm.fetchHomeData,
+              );
             }
-            return RefreshIndicator(
+            return Column(
+              
+              children: [
+                Container(
+                      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
+                      decoration: const BoxDecoration(
+                        color: AppColors.greenprimary,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 36.w,
+                            height: 36.w,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            // padding: EdgeInsets.all(4.w),
+                            child: Image.asset(
+                              'assets/images/logo_withoutname.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Padding(padding:  EdgeInsets.only(bottom: 8.h),
+                          child:
+                          Column(
+                            
+                            children: [
+                              Text(
+                                'AgriMate',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              // SizedBox(height: 8.h),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10.w,
+                                  vertical: 3.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                                child: Text(
+                                  'Petani',
+                                  style: TextStyle(
+                                    color: AppColors.greenprimary,
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                          ),
+
+                          // const Spacer(),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () =>
+                                    vm.onNotificationPressed(context),
+                                icon: const Icon(
+                                  Icons.notifications_none_rounded,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () => vm.onSettingsPressed(context),
+                                icon: const Icon(
+                                  Icons.settings_outlined,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(child: 
+            RefreshIndicator(
               color: AppColors.greenprimary,
               onRefresh: vm.onRefresh,
-              child: SingleChildScrollView(
+              child: 
+              SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _HeaderSection(profile: vm.data!.profile),
+                    
                     Padding(
                       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        // crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          _HeaderSection(profile: vm.data!.profile),
+                          SizedBox(height: 54.h),
                           _SummaryRow(summary: vm.data!.summary),
-                          SizedBox(height: 16.h),
+
                           if (vm.data!.buyerMatch.hasMatch) ...[
                             _BuyerMatchCard(
                               match: vm.data!.buyerMatch,
@@ -65,7 +160,9 @@ class _HomeBody extends StatelessWidget {
                             ),
                             SizedBox(height: 16.h),
                           ],
-                          _CreatePlanButton(onTap: () => vm.onCreatePlanPressed(context)),
+                          _CreatePlanButton(
+                            onTap: () => vm.onCreatePlanPressed(context),
+                          ),
                           SizedBox(height: 24.h),
                           _SectionHeader(
                             title: 'Rencana Panen Terakhir',
@@ -77,7 +174,8 @@ class _HomeBody extends StatelessWidget {
                               padding: EdgeInsets.only(bottom: 12.h),
                               child: _HarvestPlanCard(
                                 plan: plan,
-                                onTap: () => vm.onPlanCardPressed(context, plan),
+                                onTap: () =>
+                                    vm.onPlanCardPressed(context, plan),
                               ),
                             );
                           }),
@@ -87,7 +185,8 @@ class _HomeBody extends StatelessWidget {
                   ],
                 ),
               ),
-            );
+            ), )
+            ] );
           },
         ),
       ),
@@ -103,86 +202,52 @@ class _HeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.read<HomeViewModel>();
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-      decoration: const BoxDecoration(
-        color: AppColors.greenprimary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(0),
-          bottomRight: Radius.circular(0),
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 24.r,
+              backgroundColor: AppColors.textSecondary,
+              backgroundImage: profile.photoUrl != null
+                  ? NetworkImage(profile.photoUrl!)
+                  : null,
+              child: profile.photoUrl == null
+                  ? Icon(
+                      Icons.person,
+                      color: AppColors.greenprimary,
+                      size: 24.sp,
+                    )
+                  : null,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Halo, ${profile.name}! 👋',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    profile.location,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 12.5.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 36.w,
-                height: 36.w,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                padding: EdgeInsets.all(4.w),
-                child: Image.asset('assets/images/logo_withoutname.png', fit: BoxFit.contain),
-              ),
-              SizedBox(width: 10.w),
-              Text(
-                'AgriMate',
-                style: TextStyle(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 8.w),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text('Petani', style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.w600)),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () => vm.onNotificationPressed(context),
-                icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
-              ),
-              IconButton(
-                onPressed: () => vm.onSettingsPressed(context),
-                icon: const Icon(Icons.settings_outlined, color: Colors.white),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24.r,
-                backgroundColor: Colors.white,
-                backgroundImage:
-                    profile.photoUrl != null ? NetworkImage(profile.photoUrl!) : null,
-                child: profile.photoUrl == null
-                    ? Icon(Icons.person, color: AppColors.greenprimary, size: 24.sp)
-                    : null,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Halo, ${profile.name}! 👋',
-                      style: TextStyle(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      profile.location,
-                      style: TextStyle(color: Colors.white70, fontSize: 12.5.sp),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -194,7 +259,7 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Transform.translate(
-      offset: Offset(0, -28.h), 
+      offset: Offset(0, -28.h),
       child: Row(
         children: [
           Expanded(
@@ -231,7 +296,11 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String label;
 
-  const _StatCard({required this.icon, required this.value, required this.label});
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -245,13 +314,23 @@ class _StatCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: const BoxDecoration(color: AppColors.greenprimary, shape: BoxShape.circle),
-            child: Icon(icon, color: Colors.white, size: 18.sp),
+            width: 44.w,
+            height: 44.w,
+            decoration: const BoxDecoration(
+              color: AppColors.greenprimary,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 26.sp),
           ),
           SizedBox(height: 8.h),
-          Text(value, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
           SizedBox(height: 2.h),
           Text(
             label,
@@ -277,6 +356,7 @@ class _BuyerMatchCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.lightgreen,
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.greenprimary),
       ),
       child: Row(
         children: [
@@ -286,18 +366,28 @@ class _BuyerMatchCard extends StatelessWidget {
               children: [
                 Text(
                   'Ada pembeli yang cocok, nih!',
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.greenprimary),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.greenprimary,
+                  ),
                 ),
                 SizedBox(height: 4.h),
                 RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 12.5.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       TextSpan(
-                        text: '${match.matchCount} kecocokan ',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.greenprimary),
+                        text: '${match.matchCount} ',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.greenprimary,
+                        ),
                       ),
-                      const TextSpan(text: 'menunggu konfirmasimu'),
+                      const TextSpan(text: 'kecocokan menunggu konfirmasimu'),
                     ],
                   ),
                 ),
@@ -311,9 +401,18 @@ class _BuyerMatchCard extends StatelessWidget {
               backgroundColor: AppColors.darkgreen,
               elevation: 0,
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
             ),
-            child: Text('Lihat', style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+            child: Text(
+              'Lihat',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -334,15 +433,23 @@ class _CreatePlanButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.greenprimary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.add, color: Colors.white, size: 20),
             SizedBox(width: 8.w),
-            Text('Buat Rencana Panen Baru',
-                style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
+            Text(
+              'Buat Rencana Panen Baru',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -361,17 +468,32 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         GestureDetector(
           onTap: onSeeAll,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: AppColors.lightgreen,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: AppColors.borderDefault),
             ),
-            child: Text('Lihat Semua',
-                style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w600, color: AppColors.greenprimary)),
+
+            child: Text(
+              'Lihat Semua',
+              style: TextStyle(
+                fontSize: 11.5.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.greenprimary,
+              ),
+            ),
           ),
         ),
       ],
@@ -402,16 +524,31 @@ class _HarvestPlanCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(plan.dateRangeLabel, style: TextStyle(fontSize: 11.5.sp, color: AppColors.textSecondary)),
+                Text(
+                  plan.dateRangeLabel,
+                  style: TextStyle(
+                    fontSize: 11.5.sp,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 if (plan.hasMatch)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.purpleAccentLight,
                       borderRadius: BorderRadius.circular(20.r),
                     ),
-                    child: Text('Ada Kecocokan',
-                        style: TextStyle(fontSize: 10.5.sp, fontWeight: FontWeight.w600, color: AppColors.purpleAccent)),
+                    child: Text(
+                      'Ada Kecocokan',
+                      style: TextStyle(
+                        fontSize: 10.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.purpleAccent,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -426,17 +563,32 @@ class _HarvestPlanCard extends StatelessWidget {
                     color: AppColors.scaffoldGrey,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Text(plan.commodityEmoji, style: TextStyle(fontSize: 22.sp)),
+                  child: Text(
+                    plan.commodityEmoji,
+                    style: TextStyle(fontSize: 22.sp),
+                  ),
                 ),
                 SizedBox(width: 12.w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(plan.commodityName,
-                        style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    Text(
+                      plan.commodityName,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     SizedBox(height: 2.h),
-                    Text('${plan.totalWeightKg.toStringAsFixed(0)}kg',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: AppColors.greenprimary)),
+                    Text(
+                      '${plan.totalWeightKg.toStringAsFixed(0)}kg',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.greenprimary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -445,10 +597,20 @@ class _HarvestPlanCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Teralokasi', style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary)),
+                Text(
+                  'Teralokasi',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 Text(
                   '${plan.allocatedWeightKg.toStringAsFixed(0)}/${plan.totalWeightKg.toStringAsFixed(0)}kg',
-                  style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ],
             ),
@@ -459,7 +621,9 @@ class _HarvestPlanCard extends StatelessWidget {
                 value: plan.progress,
                 minHeight: 6.h,
                 backgroundColor: AppColors.indicatorInactive,
-                valueColor: const AlwaysStoppedAnimation(AppColors.purpleAccent),
+                valueColor: const AlwaysStoppedAnimation(
+                  AppColors.purpleAccent,
+                ),
               ),
             ),
           ],
@@ -481,14 +645,26 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded, color: AppColors.textMuted, size: 40.sp),
+          Icon(
+            Icons.error_outline_rounded,
+            color: AppColors.textMuted,
+            size: 40.sp,
+          ),
           SizedBox(height: 12.h),
-          Text(message, style: TextStyle(color: AppColors.textSecondary, fontSize: 13.sp)),
+          Text(
+            message,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13.sp),
+          ),
           SizedBox(height: 12.h),
           ElevatedButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.greenprimary),
-            child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.greenprimary,
+            ),
+            child: const Text(
+              'Coba Lagi',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

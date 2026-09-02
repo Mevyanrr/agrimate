@@ -27,7 +27,7 @@ class HomeViewModel extends ChangeNotifier {
     try {
 
       await Future.delayed(const Duration(milliseconds: 600)); 
-
+//dummy fe
       _data = HomeDataModel(
         profile: const FarmerProfileModel(
           photoUrl: null,
