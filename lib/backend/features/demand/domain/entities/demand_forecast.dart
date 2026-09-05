@@ -8,6 +8,9 @@ class DemandForecast {
     required this.neededStartDate,
     required this.neededEndDate,
     required this.deliveryAddress,
+    this.latitude,
+    this.longitude,
+    this.forecastSource = 'MANUAL',
     this.status,
   });
   final String? id;
@@ -18,5 +21,8 @@ class DemandForecast {
   final DateTime neededStartDate;
   final DateTime neededEndDate;
   final String deliveryAddress;
+  final double? latitude;
+  final double? longitude;
+  final String forecastSource;
   final String? status;
 }

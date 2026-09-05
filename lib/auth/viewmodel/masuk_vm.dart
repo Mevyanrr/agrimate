@@ -100,11 +100,13 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authRepository.completeSocialLogin(
+      final authenticatedRole = await _authRepository.completeSocialLogin(
         expectedRole: isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
       );
       if (!context.mounted) return;
-      final nextRoute = isPetani ? '/home-petani' : '/home-pembeli';
+      final nextRoute = authenticatedRole == AuthUserRole.farmer
+          ? '/home-petani'
+          : '/home-pembeli';
       Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
     } on BackendException catch (error) {
       if (context.mounted) _showError(context, error.message);

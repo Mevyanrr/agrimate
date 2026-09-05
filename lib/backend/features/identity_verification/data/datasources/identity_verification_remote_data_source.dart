@@ -8,10 +8,15 @@ import '../models/identity_verification_model.dart';
 
 abstract interface class IdentityVerificationRemoteDataSource {
   Future<IdentityVerificationModel?> getMine();
-  Future<String> submitFarmer({required Uint8List ktpBytes});
+  Future<String> submitFarmer({
+    required Uint8List ktpBytes,
+    required String ktpFileName,
+  });
   Future<String> submitBuyer({
     required Uint8List ktpBytes,
+    required String ktpFileName,
     required Uint8List npwpBytes,
+    required String npwpFileName,
   });
 }
 
@@ -21,7 +26,8 @@ class SupabaseIdentityVerificationRemoteDataSource
 
   final SupabaseClient _client;
 
-  String get _userId => _client.auth.currentUser?.id ??
+  String get _userId =>
+      _client.auth.currentUser?.id ??
       (throw const BackendException(
         'Pengguna belum login.',
         code: 'unauthenticated',
@@ -30,7 +36,7 @@ class SupabaseIdentityVerificationRemoteDataSource
   @override
   Future<IdentityVerificationModel?> getMine() async {
     final row = await _client
-        .from(DatabaseTables.identityVerifications)
+        .from(DatabaseTables.identityDocuments)
         .select()
         .eq('user_id', _userId)
         .maybeSingle();
@@ -38,50 +44,71 @@ class SupabaseIdentityVerificationRemoteDataSource
     return row == null ? null : IdentityVerificationModel.fromJson(row);
   }
 
-  Future<String> _uploadJpeg(String fileName, Uint8List bytes) async {
+  Future<String> _uploadDocument(
+    String documentName,
+    String originalFileName,
+    Uint8List bytes,
+  ) async {
     if (bytes.isEmpty) {
       throw const BackendException('File dokumen tidak boleh kosong.');
     }
 
-    final path = '$_userId/$fileName';
-    await _client.storage.from(StorageBuckets.identityDocuments).uploadBinary(
-      path,
-      bytes,
-      fileOptions: const FileOptions(
-        upsert: true,
-        contentType: 'image/jpeg',
-      ),
-    );
+    final extension = originalFileName.split('.').last.toLowerCase();
+    const allowedExtensions = {'jpg', 'jpeg', 'png', 'pdf'};
+    if (!allowedExtensions.contains(extension)) {
+      throw const BackendException('Dokumen harus berupa JPG, PNG, atau PDF.');
+    }
+    final contentType = switch (extension) {
+      'png' => 'image/png',
+      'pdf' => 'application/pdf',
+      _ => 'image/jpeg',
+    };
+    final path = '$_userId/$documentName.$extension';
+    await _client.storage
+        .from(StorageBuckets.identityDocuments)
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            upsert: true,
+            contentType: contentType,
+          ),
+        );
     return path;
   }
 
-  Future<String> _submit({
-    required String ktpPath,
-    String? npwpPath,
-  }) async {
-    final result = await _client.rpc(
-      'submit_identity_verification',
-      params: {
-        'p_ktp_path': ktpPath,
-        'p_npwp_path': npwpPath,
-      },
-    );
-    return result.toString();
+  Future<String> _submit({required String ktpPath, String? npwpPath}) async {
+    final row = await _client
+        .from(DatabaseTables.identityDocuments)
+        .upsert({
+          'user_id': _userId,
+          'ktp_path': ktpPath,
+          'npwp_path': npwpPath,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }, onConflict: 'user_id')
+        .select('id')
+        .single();
+    return row['id'].toString();
   }
 
   @override
-  Future<String> submitFarmer({required Uint8List ktpBytes}) async {
-    final ktpPath = await _uploadJpeg('ktp.jpg', ktpBytes);
+  Future<String> submitFarmer({
+    required Uint8List ktpBytes,
+    required String ktpFileName,
+  }) async {
+    final ktpPath = await _uploadDocument('ktp', ktpFileName, ktpBytes);
     return _submit(ktpPath: ktpPath);
   }
 
   @override
   Future<String> submitBuyer({
     required Uint8List ktpBytes,
+    required String ktpFileName,
     required Uint8List npwpBytes,
+    required String npwpFileName,
   }) async {
-    final ktpPath = await _uploadJpeg('ktp.jpg', ktpBytes);
-    final npwpPath = await _uploadJpeg('npwp.jpg', npwpBytes);
+    final ktpPath = await _uploadDocument('ktp', ktpFileName, ktpBytes);
+    final npwpPath = await _uploadDocument('npwp', npwpFileName, npwpBytes);
     return _submit(ktpPath: ktpPath, npwpPath: npwpPath);
   }
 }

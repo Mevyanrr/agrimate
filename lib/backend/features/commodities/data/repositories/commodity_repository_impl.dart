@@ -8,22 +8,11 @@ class CommodityRepositoryImpl implements CommodityRepository {
   final CommodityRemoteDataSource _source;
 
   @override
-  Future<Result<List<Commodity>>> getActive() async {
+  Future<Result<List<Commodity>>> getCommodities() async {
     try {
-      return Success<List<Commodity>>(await _source.getActive());
+      return Success<List<Commodity>>(await _source.getCommodities());
     } catch (error) {
       return Failure<List<Commodity>>('Gagal mengambil komoditas: $error');
-    }
-  }
-
-  @override
-  Future<Result<CommodityPrice?>> getLatestNationalProducerPrice(String id) async {
-    try {
-      return Success<CommodityPrice?>(
-        await _source.getLatestNationalProducerPrice(id),
-      );
-    } catch (error) {
-      return Failure<CommodityPrice?>('Gagal mengambil harga komoditas: $error');
     }
   }
 }

@@ -25,14 +25,25 @@ class IdentityVerificationRepositoryImpl
   Future<Result<IdentityVerification?>> getMine() => _guard(_source.getMine);
 
   @override
-  Future<Result<String>> submitFarmer({required Uint8List ktpBytes}) =>
-      _guard(() => _source.submitFarmer(ktpBytes: ktpBytes));
+  Future<Result<String>> submitFarmer({
+    required Uint8List ktpBytes,
+    required String ktpFileName,
+  }) => _guard(
+    () => _source.submitFarmer(ktpBytes: ktpBytes, ktpFileName: ktpFileName),
+  );
 
   @override
   Future<Result<String>> submitBuyer({
     required Uint8List ktpBytes,
+    required String ktpFileName,
     required Uint8List npwpBytes,
+    required String npwpFileName,
   }) => _guard(
-    () => _source.submitBuyer(ktpBytes: ktpBytes, npwpBytes: npwpBytes),
+    () => _source.submitBuyer(
+      ktpBytes: ktpBytes,
+      ktpFileName: ktpFileName,
+      npwpBytes: npwpBytes,
+      npwpFileName: npwpFileName,
+    ),
   );
 }

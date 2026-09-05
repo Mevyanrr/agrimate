@@ -24,6 +24,15 @@ class SupabaseAuthRepository implements AuthRepository {
   String _roleValue(AuthUserRole role) =>
       role == AuthUserRole.farmer ? 'FARMER' : 'BUYER';
 
+  AuthUserRole _roleFromValue(String value) => switch (value) {
+    'FARMER' => AuthUserRole.farmer,
+    'BUYER' => AuthUserRole.buyer,
+    _ => throw const BackendException(
+      'Peran pengguna tidak valid.',
+      code: 'invalid_role',
+    ),
+  };
+
   Future<void> _ensureProfile(User user) async {
     final role = user.userMetadata?['role'] as String?;
     if (role == null || (role != 'FARMER' && role != 'BUYER')) {
@@ -191,35 +200,42 @@ class SupabaseAuthRepository implements AuthRepository {
   });
 
   @override
-  Future<void> completeSocialLogin({required AuthUserRole expectedRole}) =>
-      _guard(() async {
-        var user = _client.auth.currentUser;
-        if (user == null) {
-          throw const BackendException(
-            'Sesi login sosial tidak ditemukan.',
-            code: 'unauthenticated',
-          );
-        }
+  Future<AuthUserRole> completeSocialLogin({
+    required AuthUserRole expectedRole,
+  }) => _guard(() async {
+    var user = _client.auth.currentUser;
+    if (user == null) {
+      throw const BackendException(
+        'Sesi login sosial tidak ditemukan.',
+        code: 'unauthenticated',
+      );
+    }
 
-        final expectedRoleValue = _roleValue(expectedRole);
-        final actualRole = user.userMetadata?['role'] as String?;
-        if (actualRole != null && actualRole != expectedRoleValue) {
-          await _client.auth.signOut();
-          throw const BackendException(
-            'Akun ini terdaftar dengan peran yang berbeda.',
-            code: 'role_mismatch',
-          );
-        }
+    final profile = await _client
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+    final profileRole = profile?['role'] as String?;
+    final metadataRole = user.userMetadata?['role'] as String?;
+    final storedRole = profileRole ?? metadataRole;
+    final resolvedRole = storedRole == null
+        ? expectedRole
+        : _roleFromValue(storedRole);
+    final resolvedRoleValue = _roleValue(resolvedRole);
 
-        if (actualRole == null) {
-          final response = await _client.auth.updateUser(
-            UserAttributes(data: {'role': expectedRoleValue}),
-          );
-          user = response.user ?? user;
-        }
+    // Pilihan role pada layar login hanya dipakai untuk akun OAuth baru.
+    // Akun lama selalu mengikuti role yang sudah tersimpan di profile.
+    if (metadataRole != resolvedRoleValue) {
+      final response = await _client.auth.updateUser(
+        UserAttributes(data: {'role': resolvedRoleValue}),
+      );
+      user = response.user ?? user;
+    }
 
-        await _ensureProfile(user);
-      });
+    await _ensureProfile(user);
+    return resolvedRole;
+  });
 
   @override
   Future<void> signOut() => _guard(_client.auth.signOut);

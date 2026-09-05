@@ -20,7 +20,10 @@ abstract interface class AuthRepository {
 
   Future<void> loginWithFacebook();
 
-  Future<void> completeSocialLogin({required AuthUserRole expectedRole});
+  /// Menyelesaikan onboarding OAuth dan mengembalikan role akun yang tersimpan.
+  Future<AuthUserRole> completeSocialLogin({
+    required AuthUserRole expectedRole,
+  });
 
   Future<void> signOut();
 }

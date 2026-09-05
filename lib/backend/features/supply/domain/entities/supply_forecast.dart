@@ -8,6 +8,8 @@ class SupplyForecast {
     required this.harvestStartDate,
     required this.harvestEndDate,
     required this.address,
+    this.latitude,
+    this.longitude,
     this.status,
   });
 
@@ -19,5 +21,7 @@ class SupplyForecast {
   final DateTime harvestStartDate;
   final DateTime harvestEndDate;
   final String address;
+  final double? latitude;
+  final double? longitude;
   final String? status;
 }

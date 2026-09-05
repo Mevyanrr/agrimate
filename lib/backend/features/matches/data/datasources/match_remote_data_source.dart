@@ -15,7 +15,14 @@ class SupabaseMatchRemoteDataSource implements MatchRemoteDataSource {
   @override
   Future<List<MarketMatchModel>> getMine() async {
     // RLS wajib membatasi hasil ke match milik user yang sedang login.
-    final rows = await _client.from(DatabaseTables.matches).select();
+    final rows = await _client.from(DatabaseTables.matches).select('''
+      *,
+      supply:supply_id (
+        *,
+        commodity:commodity_id (*)
+      ),
+      demand:demand_id (*)
+    ''').order('created_at', ascending: false);
     return rows.map(MarketMatchModel.fromJson).toList();
   }
 

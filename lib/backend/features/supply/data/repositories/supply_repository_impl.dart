@@ -13,6 +13,7 @@ class SupplyRepositoryImpl implements SupplyRepository {
     quantity: value.quantity, remainingQuantity: value.remainingQuantity,
     harvestStartDate: value.harvestStartDate,
     harvestEndDate: value.harvestEndDate, address: value.address,
+    latitude: value.latitude, longitude: value.longitude,
     status: value.status,
   );
 

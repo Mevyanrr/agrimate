@@ -5,9 +5,14 @@ import '../entities/identity_verification.dart';
 
 abstract interface class IdentityVerificationRepository {
   Future<Result<IdentityVerification?>> getMine();
-  Future<Result<String>> submitFarmer({required Uint8List ktpBytes});
+  Future<Result<String>> submitFarmer({
+    required Uint8List ktpBytes,
+    required String ktpFileName,
+  });
   Future<Result<String>> submitBuyer({
     required Uint8List ktpBytes,
+    required String ktpFileName,
     required Uint8List npwpBytes,
+    required String npwpFileName,
   });
 }

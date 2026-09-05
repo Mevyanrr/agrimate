@@ -1,9 +1,13 @@
 import 'package:agrimate/auth/model/otp.dart';
+import 'package:agrimate/ai/view/demand_prediction.dart';
 import 'package:agrimate/auth/view/daftar_akun.dart';
 import 'package:agrimate/auth/view/authenticated_home.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
 import 'package:agrimate/role_selection/model/role.dart';
+import 'package:agrimate/notifications/view/notifications.dart';
+import 'package:agrimate/identity_documents/view/identity_document_gate.dart';
+import 'package:agrimate/history/view/history.dart';
 import 'package:agrimate/role_selection/view/role.dart';
 import 'package:agrimate/role_selection/viewmodel/role_vm.dart';
 import 'package:agrimate/splash_onboarding/view/onboarding.dart';
@@ -77,10 +81,21 @@ class MyApp extends StatelessWidget {
                   method: args['method'] as OtpMethod,
                 );
               },
-              '/home-petani': (context) =>
-                  const AuthenticatedHomeView(role: UserRole.petani),
-              '/home-pembeli': (context) =>
-                  const AuthenticatedHomeView(role: UserRole.pembeli),
+              '/home-petani': (context) => const IdentityDocumentGate(
+                role: UserRole.petani,
+                child: AuthenticatedHomeView(role: UserRole.petani),
+              ),
+              '/home-pembeli': (context) => const IdentityDocumentGate(
+                role: UserRole.pembeli,
+                child: AuthenticatedHomeView(role: UserRole.pembeli),
+              ),
+              '/notifications': (context) => const NotificationsView(),
+              '/demand-prediction': (context) => const DemandPredictionView(),
+              '/history': (context) {
+                final role =
+                    ModalRoute.of(context)!.settings.arguments as UserRole;
+                return HistoryView(role: role);
+              },
             },
           );
         },
