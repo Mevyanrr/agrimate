@@ -180,7 +180,10 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<void> loginWithFacebook() => _guard(() async {
     final opened = await _client.auth.signInWithOAuth(
       OAuthProvider.facebook,
-      redirectTo: kIsWeb ? null : 'agrimate://login-callback',
+      // Selalu kembalikan OAuth Facebook ke aplikasi. Jika nilai ini null,
+      // Supabase memakai Site URL (mis. http://localhost:3000) sebagai fallback.
+      redirectTo: 'agrimate://login-callback',
+      scopes: 'email,public_profile',
     );
     if (!opened) {
       throw const BackendException('Tidak dapat membuka login Facebook.');
@@ -193,7 +196,7 @@ class SupabaseAuthRepository implements AuthRepository {
         var user = _client.auth.currentUser;
         if (user == null) {
           throw const BackendException(
-            'Sesi login Google tidak ditemukan.',
+            'Sesi login sosial tidak ditemukan.',
             code: 'unauthenticated',
           );
         }

@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Supabase Auth dan OAuth Facebook membutuhkan akses jaringan pada build release. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="agrimate"
         android:name="${applicationName}"
