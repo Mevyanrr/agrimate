@@ -56,8 +56,17 @@ class OtpViewModel extends ChangeNotifier {
     notifyListeners();
 
     if (!context.mounted) return;
-    final nextRoute = isPetani ? '/home-petani' : '/home-pembeli';
-    Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/lengkapi-profil',
+      (route) => false,
+      arguments: {
+        'role': role,
+        'phoneNumber': phoneNumber,
+      },
+    );
+
   }
 
   Future<void> onResendPressed(BuildContext context) async {
