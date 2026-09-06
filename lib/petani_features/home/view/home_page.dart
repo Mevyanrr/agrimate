@@ -359,7 +359,13 @@ class _CreatePlanButton extends StatelessWidget {
     return SizedBox(
       height: 52.h,
       child: ElevatedButton(
-        onPressed: onTap,
+        onPressed: () {
+    Navigator.pushNamed(
+      context,
+      '/tambah-rencana',
+    );
+  },
+
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.greenprimary,
           elevation: 0,

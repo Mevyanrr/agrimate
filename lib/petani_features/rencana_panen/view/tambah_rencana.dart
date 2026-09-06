@@ -1,6 +1,9 @@
 import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/petani_features/hasil_kecocokan_panen/model/rencana_summary_model.dart';
+import 'package:agrimate/petani_features/hasil_kecocokan_panen/view/rencana_success_page.dart';
 import 'package:agrimate/petani_features/home/viewmodel/rencana_panen_vm.dart';
 import 'package:agrimate/petani_features/widget/appbar.dart';
+import 'package:agrimate/petani_features/widget/rencana_header.dart';
 import 'package:agrimate/petani_features/widget/rencana_lanjutbottom.dart';
 import 'package:agrimate/petani_features/widget/rencana_page1.dart';
 import 'package:agrimate/petani_features/widget/rencana_page2.dart';
@@ -34,17 +37,26 @@ class _RencanaFlowBody extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
       body: SafeArea(
-        top: false,
         child: Column(
           children: [
             HomeAppBar(
               onNotificationTap: () => vm.onNotificationPressed(context),
               onSettingsTap: () => vm.onSettingsPressed(context),
             ),
+            RencanaHeader(
+              currentStep: vm.currentStep,
+              onBack: () {
+                if (vm.currentStep == 0) {
+                  Navigator.of(context).pop();
+                } else {
+                  vm.previousPage();
+                }
+              },
+            ),
             Expanded(
               child: PageView(
                 controller: vm.pageController,
-              
+
                 physics: const NeverScrollableScrollPhysics(),
                 children: const [
                   Page1KomoditasView(),
@@ -65,14 +77,27 @@ class _RencanaFlowBody extends StatelessWidget {
                 }
                 final success = await vm.submitRencana();
                 if (!context.mounted) return;
+
                 if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Rencana berhasil diajukan!')),
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => RencanaSuccessPage(
+                        rencana: RencanaSummaryModel(
+                          komoditasName: vm.selectedKomoditas!.name,
+                          komoditasEmoji: vm.selectedKomoditas!.emoji,
+                          kuantitasKg: vm.kuantitas.toInt(),
+                          tanggalMulai: vm.tanggalMulai!,
+                          tanggalSelesai: vm.tanggalSelesai!,
+                          lokasiKirim: 'Gudang Brebes', //DUMMY
+                        ),
+                      ),
+                    ),
                   );
-                  Navigator.of(context).pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gagal mengajukan rencana, coba lagi.')),
+                    const SnackBar(
+                      content: Text('Gagal mengajukan rencana, coba lagi.'),
+                    ),
                   );
                 }
               },
