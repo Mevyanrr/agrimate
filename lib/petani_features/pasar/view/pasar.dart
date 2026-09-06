@@ -1,7 +1,7 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/petani_features/pasar/widget/buyer_reqcard.dart';
-import 'package:agrimate/petani_features/widget/appbar.dart';
+import 'package:agrimate/core/widget/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +39,8 @@ class _PasarBody extends StatelessWidget {
         child: Column(
           children: [
             HomeAppBar(
+              roleLabel: 'Petani',
+              accentColor: AppColors.greenprimary,
               onNotificationTap: () => vm.onNotificationPressed(context),
               onSettingsTap: () => vm.onSettingsPressed(context),
             ),
@@ -113,7 +115,8 @@ class _PasarBody extends StatelessWidget {
                 final request = requests[index];
                 return BuyerRequestCard(
                   request: request,
-                  onDetailTap: () => vm.onDetailPressed(context, request),
+                  onDetailTap: () =>
+                      _showBuyerRequestDetailSheet(context, request),
                   onApplyTap: () => vm.onApplyPressed(request),
                 );
               },
@@ -133,8 +136,9 @@ class _SearchField extends StatefulWidget {
 }
 
 class _SearchFieldState extends State<_SearchField> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
 
   @override
   void dispose() {
@@ -151,7 +155,11 @@ class _SearchFieldState extends State<_SearchField> {
       decoration: InputDecoration(
         hintText: 'Cari komoditas atau pembeli...',
         hintStyle: TextStyle(fontSize: 13.5.sp, color: AppColors.textMuted),
-        prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20.sp),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          color: AppColors.textMuted,
+          size: 20.sp,
+        ),
         filled: true,
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(vertical: 12.h),
@@ -203,7 +211,9 @@ class _CommodityChips extends StatelessWidget {
                 color: selected ? AppColors.greenprimary : Colors.white,
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: selected ? AppColors.greenprimary : AppColors.borderDefault,
+                  color: selected
+                      ? AppColors.greenprimary
+                      : AppColors.borderDefault,
                 ),
               ),
               child: Text(
@@ -242,7 +252,9 @@ class _TimelineTabs extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: isSelected ? AppColors.greenprimary : Colors.transparent,
+                    color: isSelected
+                        ? AppColors.greenprimary
+                        : Colors.transparent,
                     width: 2,
                   ),
                 ),
@@ -252,7 +264,9 @@ class _TimelineTabs extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12.5.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? AppColors.greenprimary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.greenprimary
+                      : AppColors.textSecondary,
                 ),
               ),
             ),
@@ -281,7 +295,11 @@ class _EmptyState extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.storefront_outlined, color: AppColors.textMuted, size: 44.sp),
+                    Icon(
+                      Icons.storefront_outlined,
+                      color: AppColors.textMuted,
+                      size: 44.sp,
+                    ),
                     SizedBox(height: 12.h),
                     Text(
                       query.isEmpty
@@ -317,7 +335,11 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded, color: AppColors.textMuted, size: 40.sp),
+          Icon(
+            Icons.error_outline_rounded,
+            color: AppColors.textMuted,
+            size: 40.sp,
+          ),
           SizedBox(height: 12.h),
           Text(
             message,
@@ -326,11 +348,286 @@ class _ErrorState extends StatelessWidget {
           SizedBox(height: 12.h),
           ElevatedButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.greenprimary),
-            child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.greenprimary,
+            ),
+            child: const Text(
+              'Coba Lagi',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+void _showBuyerRequestDetailSheet(
+  BuildContext context,
+  BuyerRequestModel request,
+) {
+  final vm = context.read<PasarViewModel>();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return _BuyerRequestDetailSheet(
+        requestId: request.id,
+        initialRequest: request,
+        onApply: (current) async {
+          await vm.onApplyPressed(current);
+        },
+      );
+    },
+  );
+}
+
+class _BuyerRequestDetailSheet extends StatelessWidget {
+  final String requestId;
+  final BuyerRequestModel initialRequest;
+  final Future<void> Function(BuyerRequestModel) onApply;
+
+  const _BuyerRequestDetailSheet({
+    required this.requestId,
+    required this.initialRequest,
+    required this.onApply,
+  });
+
+  String _formatRupiah(double value) {
+    final digits = value.toStringAsFixed(0);
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      final posFromEnd = digits.length - i;
+      buffer.write(digits[i]);
+      if (posFromEnd > 1 && posFromEnd % 3 == 1) buffer.write('.');
+    }
+    return buffer.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<PasarViewModel>(
+      builder: (context, vm, _) {
+        final request = vm.getRequestById(requestId) ?? initialRequest;
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+            20.w,
+            12.h,
+            20.w,
+            24.h + MediaQuery.of(context).viewPadding.bottom,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28.r),
+              topRight: Radius.circular(28.r),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderDefault,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 18.h),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 56.w,
+                    height: 56.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.lightgreen,
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                    child: Text(
+                      request.commodityEmoji,
+                      style: TextStyle(fontSize: 26.sp),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                request.commodityName,
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            BuyerTypeBadge(type: request.buyerType),
+                          ],
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          request.buyerName,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 18.h),
+              _DetailRow(
+                label: 'Lokasi',
+                valueText: request.location,
+                prefixEmoji: '📍',
+              ),
+              _DetailRow(
+                label: 'Periode',
+                valueText: request.periodLabel,
+                prefixEmoji: '🗓️',
+              ),
+              _DetailRow(
+                label: 'Kebutuhan',
+                valueText: '${request.quantityKg.toStringAsFixed(0)} kg',
+              ),
+              _DetailRow(
+                label: 'Frekuensi',
+                valueText: request.frequencyLabel,
+                prefixEmoji: '🔄',
+              ),
+              _DetailRow(
+                label: 'Budget',
+                valueText: 'Rp ${_formatRupiah(request.pricePerKg)}/kg',
+                valueColor: AppColors.greenprimary,
+                showDivider: false,
+              ),
+              SizedBox(height: 18.h),
+              Text(
+                'Deskripsi',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                request.description,
+                style: TextStyle(
+                  fontSize: 12.5.sp,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: request.isApplied
+                      ? null
+                      : () async {
+                          await onApply(request);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: request.isApplied
+                        ? AppColors.lightgreen
+                        : AppColors.greenprimary,
+                    disabledBackgroundColor: AppColors.lightgreen,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: Text(
+                    request.isApplied ? 'Sudah Diajukan' : 'Ajukan Penawaran →',
+                    style: TextStyle(
+                      color: request.isApplied
+                          ? AppColors.greenprimary
+                          : Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String valueText;
+  final String? prefixEmoji;
+  final Color? valueColor;
+  final bool showDivider;
+
+  const _DetailRow({
+    required this.label,
+    required this.valueText,
+    this.prefixEmoji,
+    this.valueColor,
+    this.showDivider = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              Row(
+                children: [
+                  if (prefixEmoji != null) ...[
+                    Text(prefixEmoji!, style: TextStyle(fontSize: 13.sp)),
+                    SizedBox(width: 6.w),
+                  ],
+                  Text(
+                    valueText,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
+                      fontWeight: FontWeight.bold,
+                      color: valueColor ?? AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (showDivider) Container(height: 1, color: AppColors.borderDefault),
+      ],
     );
   }
 }

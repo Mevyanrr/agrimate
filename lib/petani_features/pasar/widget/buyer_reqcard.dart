@@ -30,162 +30,146 @@ class BuyerRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isApplied = request.isApplied;
 
-    return Container(
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: isApplied ? AppColors.greenprimary : const Color(0xFFE2E8F0),
-          width: isApplied ? 1.5 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: isApplied ? AppColors.greenprimary : AppColors.borderDefault,
+              width: isApplied ? 1.4 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 8.w,
-                height: 8.w,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF23C45E),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: 8.w),
-
-              Container(
-                width: 48.w,
-                height: 48.w,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE8F8EE), 
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  request.commodityEmoji,
-                  style: TextStyle(fontSize: 22.sp),
-                ),
-              ),
-              SizedBox(width: 12.w),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.scaffoldGrey,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      request.commodityEmoji,
+                      style: TextStyle(fontSize: 18.sp),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
                       request.commodityName,
                       style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1E293B),
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      '${request.buyerName} · ${request.location}',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFF64748B),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                  ),
+                  BuyerTypeBadge(type: request.buyerType),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 50.w, top: 2.h),
+                child: Text(
+                  '${request.buyerName} · ${request.location}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
-              SizedBox(width: 8.w),
-
-              _BuyerTypeBadge(type: request.buyerType),
-            ],
-          ),
-
-          SizedBox(height: 16.h),
-          const Divider(height: 1, color: Color(0xFFF1F5F9)),
-          SizedBox(height: 16.h),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${request.quantityKg.toStringAsFixed(0)} kg · ${request.periodLabel}',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
+              SizedBox(height: 12.h),
+              Text(
+                '${request.quantityKg.toStringAsFixed(0)} kg · ${request.periodLabel}',
+                style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+              ),
+              SizedBox(height: 6.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
                       'Rp ${_formatRupiah(request.pricePerKg)}/kg',
                       style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF23C45E),
+                        fontSize: 14.5.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.greenprimary,
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              OutlinedButton(
-                onPressed: onDetailTap,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFCBD5E1)),
-                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                ),
-                child: Text(
-                  'Detail',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF334155),
+                  OutlinedButton(
+                    onPressed: onDetailTap,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.borderDefault),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Detail',
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-
-              ElevatedButton(
-                onPressed: isApplied ? null : onApplyTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isApplied ? const Color(0xFFDCFCE7) : const Color(0xFF23C45E),
-                  disabledBackgroundColor: const Color(0xFFDCFCE7),
-                  elevation: 0,
-                  padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+                  SizedBox(width: 8.w),
+                  ElevatedButton(
+                    onPressed: isApplied ? null : onApplyTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          isApplied ? AppColors.lightgreen : AppColors.darkgreen,
+                      disabledBackgroundColor: AppColors.lightgreen,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                    child: Text(
+                      isApplied ? 'Diajukan' : 'Ajukan →',
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
+                        color: isApplied ? AppColors.greenprimary : Colors.white,
+                      ),
+                    ),
                   ),
-                ),
-                child: Text(
-                  isApplied ? 'Diajukan' : 'Ajukan →',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w700,
-                    color: isApplied ? const Color(0xFF23C45E) : Colors.white,
-                  ),
-                ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        ),
+        Positioned(
+          top: -3.h,
+          left: 14.w,
+          child: Container(
+            width: 9.w,
+            height: 9.w,
+            decoration: BoxDecoration(
+              color: AppColors.greenprimary,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _BuyerTypeBadge extends StatelessWidget {
+class BuyerTypeBadge extends StatelessWidget {
   final BuyerType type;
-  const _BuyerTypeBadge({required this.type});
+  const BuyerTypeBadge({super.key, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -194,8 +178,8 @@ class _BuyerTypeBadge extends StatelessWidget {
 
     switch (type) {
       case BuyerType.restoran:
-        bg = const Color(0xFFFFF1E5);
-        fg = const Color(0xFFEA580C);
+        bg = const Color(0xFFFFF1E0);
+        fg = const Color(0xFFB8722B);
         break;
       case BuyerType.distributor:
         bg = AppColors.purpleAccentLight;
@@ -212,18 +196,11 @@ class _BuyerTypeBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20.r)),
       child: Text(
         type.label,
-        style: TextStyle(
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w700,
-          color: fg,
-        ),
+        style: TextStyle(fontSize: 10.5.sp, fontWeight: FontWeight.w600, color: fg),
       ),
     );
   }

@@ -59,6 +59,10 @@ class PasarViewModel extends ChangeNotifier {
           quantityKg: 150,
           periodLabel: 'Sep 2026',
           pricePerKg: 8500,
+          frequencyLabel: 'Mingguan',
+          description:
+              'Kami butuh tomat segar setiap minggu untuk bumbu masak. '
+              'Kualitas harus konsisten grade A.',
           neededDate: DateTime(now.year, now.month, now.day),
         ),
         BuyerRequestModel(
@@ -72,6 +76,10 @@ class PasarViewModel extends ChangeNotifier {
           quantityKg: 200,
           periodLabel: 'Sep-Des 2026',
           pricePerKg: 43000,
+          frequencyLabel: 'Bulanan',
+          description:
+              'Mencari pasokan cabai rawit rutin untuk didistribusikan ke '
+              'pasar-pasar tradisional di Solo dan sekitarnya.',
           neededDate: now.add(const Duration(days: 10)),
         ),
         BuyerRequestModel(
@@ -85,6 +93,10 @@ class PasarViewModel extends ChangeNotifier {
           quantityKg: 50,
           periodLabel: 'Sep 2026',
           pricePerKg: 12000,
+          frequencyLabel: 'Mingguan',
+          description:
+              'Butuh bayam segar setiap minggu untuk menu catering harian. '
+              'Pengiriman pagi hari lebih diutamakan.',
           neededDate: now.add(const Duration(days: 2)),
         ),
         BuyerRequestModel(
@@ -98,6 +110,10 @@ class PasarViewModel extends ChangeNotifier {
           quantityKg: 300,
           periodLabel: 'Sep 2026',
           pricePerKg: 14000,
+          frequencyLabel: 'Sekali Panen',
+          description:
+              'Menampung hasil panen jagung untuk didistribusikan ke anggota '
+              'koperasi. Pembayaran langsung saat serah terima.',
           neededDate: now.add(const Duration(days: 25)),
         ),
       ];
@@ -162,7 +178,6 @@ class PasarViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<void> onApplyPressed(BuyerRequestModel request) async {
     if (request.isApplied) return;
 
@@ -173,7 +188,6 @@ class PasarViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-
       await Future.delayed(const Duration(milliseconds: 400));
     } catch (e) {
       _allRequests[index] = _allRequests[index].copyWith(isApplied: false);
@@ -181,8 +195,11 @@ class PasarViewModel extends ChangeNotifier {
     }
   }
 
-  void onDetailPressed(BuildContext context, BuyerRequestModel request) {
-    Navigator.pushNamed(context, '/pasar/detail', arguments: request.id);
+  BuyerRequestModel? getRequestById(String id) {
+    for (final request in _allRequests) {
+      if (request.id == id) return request;
+    }
+    return null;
   }
 
   void onNotificationPressed(BuildContext context) {
@@ -197,7 +214,7 @@ class PasarViewModel extends ChangeNotifier {
     if (index == currentNavIndex) return;
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/home-petani');
         break;
       case 1:
         break;

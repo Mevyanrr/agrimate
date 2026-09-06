@@ -1,7 +1,7 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
-import 'package:agrimate/petani_features/widget/appbar.dart';
+import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/petani_features/widget/card_rencanapanen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -51,10 +51,12 @@ class _HomeBody extends StatelessWidget {
             }
             return Column(
               children: [
-                HomeAppBar(
-                  onNotificationTap: () => vm.onNotificationPressed(context),
-                  onSettingsTap: () => vm.onSettingsPressed(context),
-                ),
+               HomeAppBar(
+  roleLabel: 'Petani',
+  accentColor: AppColors.greenprimary,
+  onNotificationTap: () => vm.onNotificationPressed(context),
+  onSettingsTap: () => vm.onSettingsPressed(context),
+),
                 Expanded(
                   child: RefreshIndicator(
                     color: AppColors.greenprimary,

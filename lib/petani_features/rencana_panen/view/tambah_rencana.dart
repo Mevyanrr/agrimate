@@ -2,7 +2,7 @@ import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/model/rencana_summary_model.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/view/rencana_success_page.dart';
 import 'package:agrimate/petani_features/rencana_panen/viewmodel/rencana_panen_vm.dart';
-import 'package:agrimate/petani_features/widget/appbar.dart';
+import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/petani_features/widget/rencana_header.dart';
 import 'package:agrimate/petani_features/widget/rencana_lanjutbottom.dart';
 import 'package:agrimate/petani_features/widget/rencana_page1.dart';
@@ -39,10 +39,12 @@ class _RencanaFlowBody extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            HomeAppBar(
-              onNotificationTap: () => vm.onNotificationPressed(context),
-              onSettingsTap: () => vm.onSettingsPressed(context),
-            ),
+             HomeAppBar(
+  roleLabel: 'Petani',
+  accentColor: AppColors.greenprimary,
+  onNotificationTap: () => vm.onNotificationPressed(context),
+  onSettingsTap: () => vm.onSettingsPressed(context),
+),
             RencanaHeader(
               currentStep: vm.currentStep,
               onBack: () {
