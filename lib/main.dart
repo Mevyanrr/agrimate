@@ -3,6 +3,7 @@ import 'package:agrimate/auth/view/daftar_akun.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
+import 'package:agrimate/petani_features/home/view/rencana_panen.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/role_selection/view/role.dart';
 import 'package:agrimate/role_selection/viewmodel/role_vm.dart';
@@ -72,6 +73,7 @@ class MyApp extends StatelessWidget {
                 );
               },
               '/home-petani': (context) => const HomeView(),
+              '/rencana-panen': (context) => const RencanaPanenView(),
             },
           );
         },

@@ -53,8 +53,8 @@ class BuyerMatchModel {
 class HarvestPlanModel {
   final String id;
   final String commodityName;
-  final String commodityEmoji; 
-  final String dateRangeLabel; 
+  final String commodityEmoji;
+  final String dateRangeLabel;
   final double totalWeightKg;
   final double allocatedWeightKg;
   final bool hasMatch;
@@ -79,9 +79,22 @@ class HarvestPlanModel {
       commodityEmoji: json['commodity_emoji'] as String? ?? '🌾',
       dateRangeLabel: json['date_range_label'] as String? ?? '-',
       totalWeightKg: (json['total_weight_kg'] as num?)?.toDouble() ?? 0,
-      allocatedWeightKg: (json['allocated_weight_kg'] as num?)?.toDouble() ?? 0,
+      allocatedWeightKg:
+          (json['allocated_weight_kg'] as num?)?.toDouble() ?? 0,
       hasMatch: json['has_match'] as bool? ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'commodity_name': commodityName,
+      'commodity_emoji': commodityEmoji,
+      'date_range_label': dateRangeLabel,
+      'total_weight_kg': totalWeightKg,
+      'allocated_weight_kg': allocatedWeightKg,
+      'has_match': hasMatch,
+    };
   }
 }
 

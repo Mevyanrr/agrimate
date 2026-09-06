@@ -1,6 +1,8 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
+import 'package:agrimate/petani_features/widget/appbar.dart';
+import 'package:agrimate/petani_features/widget/card_rencanapanen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -48,145 +50,73 @@ class _HomeBody extends StatelessWidget {
               );
             }
             return Column(
-              
               children: [
-                Container(
-                      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
-                      decoration: const BoxDecoration(
-                        color: AppColors.greenprimary,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 36.w,
-                            height: 36.w,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            // padding: EdgeInsets.all(4.w),
-                            child: Image.asset(
-                              'assets/images/logo_withoutname.png',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          SizedBox(width: 10.w),
-                          Padding(padding:  EdgeInsets.only(bottom: 8.h),
-                          child:
-                          Column(
-                            
-                            children: [
-                              Text(
-                                'AgriMate',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              // SizedBox(height: 8.h),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10.w,
-                                  vertical: 3.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20.r),
-                                ),
-                                child: Text(
-                                  'Petani',
-                                  style: TextStyle(
-                                    color: AppColors.greenprimary,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                          ),
-
-                          // const Spacer(),
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () =>
-                                    vm.onNotificationPressed(context),
-                                icon: const Icon(
-                                  Icons.notifications_none_rounded,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () => vm.onSettingsPressed(context),
-                                icon: const Icon(
-                                  Icons.settings_outlined,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(child: 
-            RefreshIndicator(
-              color: AppColors.greenprimary,
-              onRefresh: vm.onRefresh,
-              child: 
-              SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+                HomeAppBar(
+                  onNotificationTap: () => vm.onNotificationPressed(context),
+                  onSettingsTap: () => vm.onSettingsPressed(context),
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    color: AppColors.greenprimary,
+                    onRefresh: vm.onRefresh,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _HeaderSection(profile: vm.data!.profile),
-                          SizedBox(height: 54.h),
-                          _SummaryRow(summary: vm.data!.summary),
-
-                          if (vm.data!.buyerMatch.hasMatch) ...[
-                            _BuyerMatchCard(
-                              match: vm.data!.buyerMatch,
-                              onTap: () => vm.onBuyerMatchPressed(context),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              20.w,
+                              16.h,
+                              20.w,
+                              24.h,
                             ),
-                            SizedBox(height: 16.h),
-                          ],
-                          _CreatePlanButton(
-                            onTap: () => vm.onCreatePlanPressed(context),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              // crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _HeaderSection(profile: vm.data!.profile),
+                                SizedBox(height: 54.h),
+                                _SummaryRow(summary: vm.data!.summary),
+
+                                if (vm.data!.buyerMatch.hasMatch) ...[
+                                  _BuyerMatchCard(
+                                    match: vm.data!.buyerMatch,
+                                    onTap: () =>
+                                        vm.onBuyerMatchPressed(context),
+                                  ),
+                                  SizedBox(height: 16.h),
+                                ],
+                                _CreatePlanButton(
+                                  onTap: () => vm.onCreatePlanPressed(context),
+                                ),
+                                SizedBox(height: 24.h),
+                                _SectionHeader(
+                                  title: 'Rencana Panen Terakhir',
+                                  onSeeAll: () =>
+                                      vm.onSeeAllPlansPressed(context),
+                                ),
+                                SizedBox(height: 12.h),
+                                ...vm.data!.recentPlans.map((plan) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 12.h),
+                                    child: HarvestPlanCard(
+                                      plan: plan,
+                                      onTap: () =>
+                                          vm.onPlanCardPressed(context, plan),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
-                          SizedBox(height: 24.h),
-                          _SectionHeader(
-                            title: 'Rencana Panen Terakhir',
-                            onSeeAll: () => vm.onSeeAllPlansPressed(context),
-                          ),
-                          SizedBox(height: 12.h),
-                          ...vm.data!.recentPlans.map((plan) {
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 12.h),
-                              child: _HarvestPlanCard(
-                                plan: plan,
-                                onTap: () =>
-                                    vm.onPlanCardPressed(context, plan),
-                              ),
-                            );
-                          }),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ), )
-            ] );
+              ],
+            );
           },
         ),
       ),
@@ -497,138 +427,6 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _HarvestPlanCard extends StatelessWidget {
-  final HarvestPlanModel plan;
-  final VoidCallback onTap;
-
-  const _HarvestPlanCard({required this.plan, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.borderDefault),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  plan.dateRangeLabel,
-                  style: TextStyle(
-                    fontSize: 11.5.sp,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (plan.hasMatch)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.purpleAccentLight,
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Text(
-                      'Ada Kecocokan',
-                      style: TextStyle(
-                        fontSize: 10.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.purpleAccent,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            Row(
-              children: [
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.scaffoldGrey,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Text(
-                    plan.commodityEmoji,
-                    style: TextStyle(fontSize: 22.sp),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      plan.commodityName,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      '${plan.totalWeightKg.toStringAsFixed(0)}kg',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.greenprimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 12.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Teralokasi',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  '${plan.allocatedWeightKg.toStringAsFixed(0)}/${plan.totalWeightKg.toStringAsFixed(0)}kg',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 6.h),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20.r),
-              child: LinearProgressIndicator(
-                value: plan.progress,
-                minHeight: 6.h,
-                backgroundColor: AppColors.indicatorInactive,
-                valueColor: const AlwaysStoppedAnimation(
-                  AppColors.purpleAccent,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
