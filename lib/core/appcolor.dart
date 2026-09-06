@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  AppColors._(); 
+  AppColors._();
 
   static const Color greenprimary = Color(0XFF2CC356);
   static const Color darkgreen = Color(0XFF27743D);
@@ -13,7 +13,7 @@ class AppColors {
 
   static const Color borderDefault = Color(0xFFE5E7EB);
 
- static const Color purpleAccent = Color(0xFF9B51E0);  
+  static const Color purpleAccent = Color(0xFF9B51E0);
   static const Color purpleAccentLight = Color(0xFFF3E8FD);
 
   static const Color textPrimary = Color(0xFF1A1A1A);
@@ -27,4 +27,14 @@ class AppColors {
   static const Color indicatorInactive = Color(0xFFE2E5E9);
 
   static Color shadowLight = Colors.black.withOpacity(0.08);
+
+  static const Color amberAccent = Color(0xFFF2994A);
+  static const Color amberAccentLight = Color(0xFFFFF0D9);
+
+  static const Color redAccent = Color(0xFFEB5757);
+  static const Color redAccentLight = Color(0xFFFDECEC);
+
+  static const Color goldStar = Color(0xFFFFC107);
+  static const Color goldStarLight = Color(0xFFFFF3D6);
+  static const Color goldButtonBg = Color(0xFFFFF7E0);
 }

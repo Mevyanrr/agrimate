@@ -15,6 +15,9 @@ import 'package:agrimate/role_selection/viewmodel/role_vm.dart';
 import 'package:agrimate/splash_onboarding/view/onboarding.dart';
 import 'package:agrimate/splash_onboarding/view/splash_next.dart';
 import 'package:agrimate/splash_onboarding/viewmodel/onboarding_vm.dart';
+import 'package:agrimate/transaksi/model/transaction.dart';
+import 'package:agrimate/transaksi/view/transaction_detail_view.dart';
+import 'package:agrimate/transaksi/view/transaction_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,7 +55,7 @@ class MyApp extends StatelessWidget {
             title: 'MyApp',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(useMaterial3: true),
-            initialRoute: '/profil',
+            initialRoute: '/splash1',
             routes: {
               '/splash1': (context) => const SplashPage1(),
               '/splash2': (context) => const SplashPage2(),
@@ -60,12 +63,14 @@ class MyApp extends StatelessWidget {
               '/role-selection': (context) => const RoleView(),
               '/login': (context) {
                 final role =
-                    ModalRoute.of(context)?.settings.arguments as UserRole? ?? UserRole.petani;
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.petani;
                 return LoginView(role: role);
               },
               '/register': (context) {
                 final role =
-                    ModalRoute.of(context)?.settings.arguments as UserRole? ?? UserRole.petani;
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.petani;
                 return RegisterView(role: role);
               },
               '/otp-verification': (context) {
@@ -85,8 +90,24 @@ class MyApp extends StatelessWidget {
               '/lengkapi-profil': (context) => const LengkapiProfilView(),
               '/profil': (context) {
                 final role =
-                    ModalRoute.of(context)?.settings.arguments as UserRole? ?? UserRole.petani;
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.petani;
                 return ProfileView(role: role);
+              },
+              '/transaksi': (context) {
+                final role =
+                    ModalRoute.of(context)!.settings.arguments as UserRole? ??
+                    UserRole.petani;
+                return TransactionListView(role: role);
+              },
+              '/transaction-detail': (context) {
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
+                return TransactionDetailView(
+                  role: args['role'] as UserRole,
+                  transaction: args['transaction'] as TransactionModel,
+                );
               },
             },
           );
