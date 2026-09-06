@@ -59,7 +59,7 @@ class OtpViewModel extends ChangeNotifier {
     try {
       await _authRepository.verifyPhoneOtp(phone: phoneNumber, token: otpCode);
       if (!context.mounted) return;
-      final nextRoute = isPetani ? '/home-petani' : '/home-pembeli';
+      final nextRoute = isPetani ? '/lengkapi-profil' : '/home-pembeli';
       Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
     } on BackendException catch (error) {
       if (context.mounted) _showMessage(context, error.message);

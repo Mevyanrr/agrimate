@@ -25,4 +25,5 @@ abstract final class DatabaseTables {
 
 abstract final class StorageBuckets {
   static const String identityDocuments = 'identity-documents';
+  static const String landPhotos = 'land_photo';
 }

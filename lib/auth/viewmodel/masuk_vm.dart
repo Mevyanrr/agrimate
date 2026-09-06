@@ -1,6 +1,9 @@
 import 'package:agrimate/auth/model/masuk.dart';
 import 'package:agrimate/backend/backend_dependencies.dart';
 import 'package:agrimate/backend/core/errors/backend_exception.dart';
+import 'package:agrimate/backend/core/result/result.dart';
+import 'package:agrimate/backend/features/profile/domain/entities/profile_entity.dart'
+    as backend_profile;
 import 'package:agrimate/backend/features/auth/domain/entities/auth_registration.dart';
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/role_selection/model/role.dart';
@@ -57,7 +60,8 @@ class LoginViewModel extends ChangeNotifier {
         expectedRole: isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
       );
       if (!context.mounted) return;
-      final nextRoute = isPetani ? '/home-petani' : '/home-pembeli';
+      final nextRoute = isPetani ? await _petaniNextRoute() : '/home-pembeli';
+      if (!context.mounted) return;
       Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
     } on BackendException catch (error) {
       if (context.mounted) _showError(context, error.message);
@@ -105,8 +109,9 @@ class LoginViewModel extends ChangeNotifier {
       );
       if (!context.mounted) return;
       final nextRoute = authenticatedRole == AuthUserRole.farmer
-          ? '/home-petani'
+          ? await _petaniNextRoute()
           : '/home-pembeli';
+      if (!context.mounted) return;
       Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
     } on BackendException catch (error) {
       if (context.mounted) _showError(context, error.message);
@@ -120,6 +125,18 @@ class LoginViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<String> _petaniNextRoute() async {
+    final result = await BackendDependencies.create().profileRepository
+        .getMine();
+    if (result is Success<backend_profile.ProfileEntity?>) {
+      final profile = result.data;
+      if (profile != null && profile.fullName.trim().isNotEmpty) {
+        return '/home-petani';
+      }
+    }
+    return '/lengkapi-profil';
   }
 
   void onForgotPasswordPressed(BuildContext context) {

@@ -106,7 +106,7 @@ class RegisterViewModel extends ChangeNotifier {
       } else {
         Navigator.pushNamedAndRemoveUntil(
           context,
-          isPetani ? '/home-petani' : '/home-pembeli',
+          isPetani ? '/lengkapi-profil' : '/home-pembeli',
           (route) => false,
         );
       }
