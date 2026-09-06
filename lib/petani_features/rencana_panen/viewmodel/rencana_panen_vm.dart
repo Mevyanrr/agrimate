@@ -1,6 +1,6 @@
-import 'package:agrimate/petani_features/data/rencana_panen.dart';
+import 'package:agrimate/petani_features/home/data/rencana_panen.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
-import 'package:agrimate/petani_features/home/model/rencana_panen.dart';
+import 'package:agrimate/petani_features/rencana_panen/model/rencana_panen.dart';
 import 'package:flutter/material.dart';
 
 enum RencanaPanenLoadState { loading, loaded, error }

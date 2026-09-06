@@ -1,5 +1,5 @@
 import 'package:agrimate/core/appcolor.dart';
-import 'package:agrimate/petani_features/home/viewmodel/rencana_panen_vm.dart';
+import 'package:agrimate/petani_features/rencana_panen/viewmodel/rencana_panen_vm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
