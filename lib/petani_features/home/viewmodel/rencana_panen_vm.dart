@@ -1,3 +1,4 @@
+import 'package:agrimate/petani_features/data/rencana_panen.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
 import 'package:agrimate/petani_features/home/model/rencana_panen.dart';
 import 'package:flutter/material.dart';
@@ -125,4 +126,163 @@ class RencanaPanenViewModel extends ChangeNotifier {
   void onPlanCardPressed(BuildContext context, HarvestPlanModel plan) {
     Navigator.pushNamed(context, '/rencana-panen/detail', arguments: plan.id);
   }
+}
+
+class RencanaViewModel extends ChangeNotifier {
+  RencanaViewModel({RencanaRepository? repository})
+      : _repository = repository ?? RencanaRepositoryImpl();
+
+  final RencanaRepository _repository;
+
+  final PageController pageController = PageController();
+  static const int totalSteps = 4;
+
+  int _currentStep = 0;
+  int get currentStep => _currentStep;
+
+  // PAGE 1 — Pilih Komoditas
+  final List<KomoditasModel> komoditasList = KomoditasData.list;
+  KomoditasModel? selectedKomoditas;
+
+  void selectKomoditas(KomoditasModel komoditas) {
+    selectedKomoditas = komoditas;
+    notifyListeners();
+    _repository.saveDraft({'step': 1, 'komoditas_id': komoditas.id});
+  }
+
+  bool get isPage1Valid => selectedKomoditas != null;
+
+  // PAGE 2 — Kuantitas (kg)
+  static const double maxKuantitas = 10000;
+  double kuantitas = 10;
+  bool _kuantitasInteracted = false; 
+  void setKuantitas(double value) {
+    kuantitas = value.clamp(0, maxKuantitas);
+    _kuantitasInteracted = true;
+    notifyListeners();
+  }
+
+  bool get isPage2Valid => _kuantitasInteracted && kuantitas > 0;
+
+//PAGE 3 — Pilih Tanggal Panen
+  DateTime calendarMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime? tanggalMulai;
+  DateTime? tanggalSelesai;
+
+  void changeMonth(int delta) {
+    calendarMonth = DateTime(calendarMonth.year, calendarMonth.month + delta);
+    notifyListeners();
+  }
+
+  void setMonth(int month) {
+    calendarMonth = DateTime(calendarMonth.year, month);
+    notifyListeners();
+  }
+
+  void setYear(int year) {
+    calendarMonth = DateTime(year, calendarMonth.month);
+    notifyListeners();
+  }
+
+  void selectDate(DateTime date) {
+    if (tanggalMulai == null || tanggalSelesai != null) {
+      tanggalMulai = date;
+      tanggalSelesai = null;
+    } else if (date.isBefore(tanggalMulai!)) {
+      tanggalMulai = date;
+    } else if (date.isAtSameMomentAs(tanggalMulai!)) {
+
+    } else {
+      tanggalSelesai = date;
+      _repository.saveDraft({
+        'step': 3,
+        'tanggal_mulai': tanggalMulai?.toIso8601String(),
+        'tanggal_selesai': tanggalSelesai?.toIso8601String(),
+      });
+    }
+    notifyListeners();
+  }
+
+  int get durasiHari {
+    if (tanggalMulai == null || tanggalSelesai == null) return 0;
+    return tanggalSelesai!.difference(tanggalMulai!).inDays;
+  }
+
+  bool get isPage3Valid => tanggalMulai != null && tanggalSelesai != null;
+
+  bool isSubmitting = false;
+
+  Future<bool> submitRencana() async {
+    isSubmitting = true;
+    notifyListeners();
+
+    final payload = {
+      'komoditas_id': selectedKomoditas?.id,
+      'komoditas_name': selectedKomoditas?.name,
+      'kuantitas_kg': kuantitas.toInt(),
+      'tanggal_mulai': tanggalMulai?.toIso8601String(),
+      'tanggal_selesai': tanggalSelesai?.toIso8601String(),
+      'estimasi_durasi_hari': durasiHari,
+    };
+
+    final success = await _repository.submitRencana(payload);
+    isSubmitting = false;
+    notifyListeners();
+    return success;
+  }
+
+  bool get isCurrentStepValid {
+    switch (_currentStep) {
+      case 0:
+        return isPage1Valid;
+      case 1:
+        return isPage2Valid;
+      case 2:
+        return isPage3Valid;
+      default:
+        return true; 
+    }
+  }
+
+  void nextPage() {
+    if (!isCurrentStepValid) return;
+    if (_currentStep >= totalSteps - 1) return;
+    _currentStep++;
+    pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    notifyListeners();
+  }
+
+  bool previousPage() {
+    if (_currentStep == 0) return false;
+    _currentStep--;
+    pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    notifyListeners();
+    return true;
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
+    super.dispose();
+  }
+
+  void onNotificationPressed(BuildContext context) {
+  Navigator.pushNamed(
+    context,
+    '/notifikasi',
+  );
+}
+
+void onSettingsPressed(BuildContext context) {
+  Navigator.pushNamed(
+    context,
+    '/pengaturan',
+  );
+}
 }

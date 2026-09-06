@@ -100,7 +100,7 @@ class _RencanaPanenHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Rencana Panen',
+            'Rencana Panen Saya',
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 17.sp,
@@ -112,7 +112,7 @@ class _RencanaPanenHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
             child: InkWell(
               borderRadius: BorderRadius.circular(12.r),
-              onTap: onAddTap,
+             onTap: () { Navigator.pushNamed( context, '/tambah-rencana', ); },
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 child: 
