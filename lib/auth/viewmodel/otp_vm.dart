@@ -44,30 +44,26 @@ class OtpViewModel extends ChangeNotifier {
   }
 
   Future<void> onVerifyPressed(BuildContext context) async {
-    if (!isComplete) return;
+  if (!isComplete) return;
 
-    _isLoading = true;
-    notifyListeners();
+  _isLoading = true;
+  notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
-    debugPrint('Verifikasi OTP: $otpCode untuk $phoneNumber');
+  await Future.delayed(const Duration(seconds: 1));
+  debugPrint('Verifikasi OTP: $otpCode untuk $phoneNumber');
 
-    _isLoading = false;
-    notifyListeners();
+  _isLoading = false;
+  notifyListeners();
 
-    if (!context.mounted) return;
+  if (!context.mounted) return;
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/lengkapi-profil',
-      (route) => false,
-      arguments: {
-        'role': role,
-        'phoneNumber': phoneNumber,
-      },
-    );
-
-  }
+  Navigator.pushNamedAndRemoveUntil(
+  context,
+  '/lengkapi-profil',
+  (route) => false,
+  arguments: {'role': role}, 
+);
+}
 
   Future<void> onResendPressed(BuildContext context) async {
     debugPrint('Kirim ulang OTP via ${method.name} ke $phoneNumber');

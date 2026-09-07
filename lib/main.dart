@@ -87,7 +87,16 @@ class MyApp extends StatelessWidget {
               '/rencana-panen': (context) => const RencanaPanenView(),
               '/tambah-rencana': (context) => const RencanaFlowPage(),
               '/pasar': (context) => const PasarView(),
-              '/lengkapi-profil': (context) => const LengkapiProfilView(),
+              '/lengkapi-profil': (context) {
+                final args =
+                    ModalRoute.of(context)?.settings.arguments
+                        as Map<String, dynamic>?;
+                final UserRole role =
+                    args?['role'] as UserRole? ??
+                    UserRole.petani; 
+
+                return LengkapiProfilView(role: role);
+              },
               '/profil': (context) {
                 final role =
                     ModalRoute.of(context)?.settings.arguments as UserRole? ??

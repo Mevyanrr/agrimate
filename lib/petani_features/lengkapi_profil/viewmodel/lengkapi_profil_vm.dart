@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../model/lengkapi_profil.dart';
@@ -6,7 +8,9 @@ import '../model/lengkapi_profil.dart';
 enum SubmitState { idle, submitting, error }
 
 class LengkapiProfilViewModel extends ChangeNotifier {
-  LengkapiProfilViewModel() {
+  final UserRole role; 
+
+  LengkapiProfilViewModel({required this.role}) {
     for (final controller in [
       namaController,
       whatsappController,
@@ -17,6 +21,14 @@ class LengkapiProfilViewModel extends ChangeNotifier {
       controller.addListener(notifyListeners);
     }
   }
+
+  bool get isPembeli => role == UserRole.pembeli;
+
+  Color get primaryColor =>
+      isPembeli ? AppColors.orangeprimary : AppColors.greenprimary;
+
+  Color get primaryLightColor =>
+      isPembeli ? AppColors.lightorange : AppColors.lightgreen;
 
   final namaController = TextEditingController();
   final whatsappController = TextEditingController();
@@ -60,7 +72,7 @@ class LengkapiProfilViewModel extends ChangeNotifier {
 
   String? get luasLahanError {
     final v = luasLahanController.text.trim();
-    if (v.isEmpty) return null; 
+    if (v.isEmpty) return null;
     final parsed = double.tryParse(v.replaceAll(',', '.'));
     if (parsed == null || parsed <= 0) return 'Luas lahan tidak valid';
     return null;

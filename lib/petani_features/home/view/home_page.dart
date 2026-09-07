@@ -51,12 +51,12 @@ class _HomeBody extends StatelessWidget {
             }
             return Column(
               children: [
-               HomeAppBar(
-  roleLabel: 'Petani',
-  accentColor: AppColors.greenprimary,
-  onNotificationTap: () => vm.onNotificationPressed(context),
-  onSettingsTap: () => vm.onSettingsPressed(context),
-),
+                HomeAppBar(
+                  roleLabel: 'Petani',
+                  accentColor: AppColors.greenprimary,
+                  onNotificationTap: () => vm.onNotificationPressed(context),
+                  onSettingsTap: () => vm.onSettingsPressed(context),
+                ),
                 Expanded(
                   child: RefreshIndicator(
                     color: AppColors.greenprimary,
@@ -75,7 +75,6 @@ class _HomeBody extends StatelessWidget {
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              // crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _HeaderSection(profile: vm.data!.profile),
                                 SizedBox(height: 54.h),
@@ -362,11 +361,8 @@ class _CreatePlanButton extends StatelessWidget {
       height: 52.h,
       child: ElevatedButton(
         onPressed: () {
-    Navigator.pushNamed(
-      context,
-      '/tambah-rencana',
-    );
-  },
+          Navigator.pushNamed(context, '/tambah-rencana');
+        },
 
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.greenprimary,

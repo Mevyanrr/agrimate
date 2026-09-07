@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,12 +8,17 @@ import 'package:provider/provider.dart';
 import '../viewmodel/lengkapi_profil_vm.dart';
 
 class LengkapiProfilView extends StatelessWidget {
-  const LengkapiProfilView({super.key});
+  final UserRole role;
+
+  const LengkapiProfilView({
+    super.key,
+    required this.role,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => LengkapiProfilViewModel(),
+      create: (_) => LengkapiProfilViewModel(role: role),
       child: const _LengkapiProfilBody(),
     );
   }
@@ -26,6 +32,9 @@ class _LengkapiProfilBody extends StatelessWidget {
     final vm = context.watch<LengkapiProfilViewModel>();
     final isSubmitting = vm.submitState == SubmitState.submitting;
 
+    final primaryColor = vm.primaryColor;
+    final primaryLightColor = vm.primaryLightColor;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -38,7 +47,6 @@ class _LengkapiProfilBody extends StatelessWidget {
                 child: Image.asset(
                   'assets/images/logo_withname.png',
                   height: 90.h,
-                  
                 ),
               ),
               SizedBox(height: 20.h),
@@ -53,7 +61,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                     const TextSpan(text: 'Lengkapi '),
                     TextSpan(
                       text: 'Profilmu',
-                      style: TextStyle(color: AppColors.greenprimary),
+                      style: TextStyle(color: primaryColor),
                     ),
                   ],
                 ),
@@ -74,6 +82,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                 hint: 'contoh: Budi Santoso',
                 controller: vm.namaController,
                 errorText: vm.namaError,
+                primaryColor: primaryColor,
               ),
               SizedBox(height: 16.h),
               _ProfileTextField(
@@ -84,6 +93,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                 keyboardType: TextInputType.phone,
                 maxLength: 15,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                primaryColor: primaryColor,
               ),
               SizedBox(height: 20.h),
               const _SectionDivider(),
@@ -105,6 +115,8 @@ class _LengkapiProfilBody extends StatelessWidget {
                     'Format JPG/PNG, maks. 5MB. Membantu pembeli lebih percaya.',
                 file: vm.fotoLahan,
                 onTap: vm.pickFotoLahan,
+                primaryColor: primaryColor,
+                lightColor: primaryLightColor,
               ),
               SizedBox(height: 16.h),
               _ProfileTextField(
@@ -116,6 +128,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*[.,]?\d*')),
                 ],
+                primaryColor: primaryColor,
               ),
               SizedBox(height: 16.h),
               _ProfileTextField(
@@ -123,6 +136,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                 hint: 'Masukkan alamat lengkap atau nama kelompok tani',
                 controller: vm.alamatLahanController,
                 errorText: vm.alamatLahanError,
+                primaryColor: primaryColor,
               ),
               SizedBox(height: 20.h),
               const _SectionDivider(),
@@ -137,6 +151,7 @@ class _LengkapiProfilBody extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 maxLength: 16,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                primaryColor: primaryColor,
               ),
               SizedBox(height: 16.h),
               Text(
@@ -155,6 +170,8 @@ class _LengkapiProfilBody extends StatelessWidget {
                     'tanpa terpotong.',
                 file: vm.fotoKtp,
                 onTap: vm.pickFotoKtp,
+                primaryColor: primaryColor,
+                lightColor: primaryLightColor,
               ),
               SizedBox(height: 28.h),
               if (vm.submitError != null) ...[
@@ -170,8 +187,8 @@ class _LengkapiProfilBody extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: isSubmitting ? null : () => vm.submit(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.greenprimary,
-                    disabledBackgroundColor: AppColors.greenprimary,
+                    backgroundColor: primaryColor, 
+                    disabledBackgroundColor: primaryColor,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14.r),
@@ -238,11 +255,13 @@ class _ProfileTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final int? maxLength;
   final List<TextInputFormatter>? inputFormatters;
+  final Color primaryColor;
 
   const _ProfileTextField({
     required this.label,
     required this.hint,
     required this.controller,
+    required this.primaryColor,
     this.errorText,
     this.keyboardType = TextInputType.text,
     this.maxLength,
@@ -259,7 +278,7 @@ class _ProfileTextField extends StatelessWidget {
     final Color borderColor = hasError
         ? _errorColor
         : hasValue
-            ? AppColors.greenprimary
+            ? primaryColor
             : AppColors.borderDefault;
 
     return Column(
@@ -304,7 +323,7 @@ class _ProfileTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
-                color: hasError ? _errorColor : AppColors.greenprimary,
+                color: hasError ? _errorColor : primaryColor,
                 width: 1.6,
               ),
             ),
@@ -327,12 +346,16 @@ class _PhotoUploadBox extends StatelessWidget {
   final String subtitle;
   final File? file;
   final VoidCallback onTap;
+  final Color primaryColor;
+  final Color lightColor;
 
   const _PhotoUploadBox({
     required this.title,
     required this.subtitle,
     required this.file,
     required this.onTap,
+    required this.primaryColor,
+    required this.lightColor,
   });
 
   @override
@@ -342,8 +365,8 @@ class _PhotoUploadBox extends StatelessWidget {
       child: CustomPaint(
         painter: _DashedBorderPainter(
           color: file != null
-              ? AppColors.greenprimary
-              : AppColors.greenprimary.withOpacity(0.5),
+              ? primaryColor
+              : primaryColor.withOpacity(0.5),
           radius: 16.r,
         ),
         child: Container(
@@ -362,13 +385,13 @@ class _PhotoUploadBox extends StatelessWidget {
           width: 48.w,
           height: 48.w,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: AppColors.lightgreen,
+          decoration: BoxDecoration(
+            color: lightColor,
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.image_outlined,
-            color: AppColors.greenprimary,
+            color: primaryColor,
             size: 22.sp,
           ),
         ),
@@ -408,11 +431,11 @@ class _PhotoUploadBox extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, color: AppColors.greenprimary, size: 15.sp),
+            Icon(Icons.check_circle, color: primaryColor, size: 15.sp),
             SizedBox(width: 4.w),
             Text(
               'Foto berhasil dipilih. Ketuk untuk mengganti.',
-              style: TextStyle(fontSize: 11.sp, color: AppColors.greenprimary),
+              style: TextStyle(fontSize: 11.sp, color: primaryColor),
             ),
           ],
         ),

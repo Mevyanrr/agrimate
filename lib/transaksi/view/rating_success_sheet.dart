@@ -1,6 +1,5 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
-import 'package:agrimate/transaksi/view/transaction_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
