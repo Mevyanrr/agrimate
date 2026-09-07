@@ -1,5 +1,7 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/pasar/model/pasar.dart';
+import 'package:agrimate/petani_features/pasar/widget/pasar_theme.dart';
+import 'package:agrimate/petani_features/pasar/widget/product_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,161 +10,178 @@ class BuyerRequestCard extends StatelessWidget {
   final VoidCallback onDetailTap;
   final VoidCallback onApplyTap;
 
+  final VoidCallback? onCallTap;
+  final VoidCallback? onWhatsappTap;
+
+  final PasarCardRole role;
+
   const BuyerRequestCard({
     super.key,
     required this.request,
     required this.onDetailTap,
     required this.onApplyTap,
+    this.onCallTap,
+    this.onWhatsappTap,
+    this.role = PasarCardRole.petani,
   });
 
-  String _formatRupiah(double value) {
-    final digits = value.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    for (int i = 0; i < digits.length; i++) {
-      final posFromEnd = digits.length - i;
-      buffer.write(digits[i]);
-      if (posFromEnd > 1 && posFromEnd % 3 == 1) buffer.write('.');
+  String _priceLabel() {
+    final min = formatRupiah(request.pricePerKg);
+    final max = request.maxPricePerKg;
+    if (max != null && max > request.pricePerKg) {
+      return 'Rp $min-${formatRupiah(max)}/kg';
     }
-    return buffer.toString();
+    return 'Rp $min/kg';
+  }
+
+  String _actionLabel(bool isApplied) {
+    if (role == PasarCardRole.pembeli) {
+      return isApplied ? 'Dihubungi' : 'Hubungi';
+    }
+    return isApplied ? 'Diajukan' : 'Ajukan';
+  }
+
+  void _openDetail(BuildContext context) {
+    onDetailTap();
+    showProductDetailSheet(
+      context,
+      request: request,
+      role: role,
+      onApply: onApplyTap,
+      onCall: onCallTap ?? onApplyTap,
+      onWhatsapp: onWhatsappTap ?? onApplyTap,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final isApplied = request.isApplied;
+    final theme = PasarCardTheme.of(role);
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: isApplied ? AppColors.greenprimary : AppColors.borderDefault,
-              width: isApplied ? 1.4 : 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: isApplied ? theme.primary : theme.borderIdle,
+          width: isApplied ? 1.4 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40.w,
-                    height: 40.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.scaffoldGrey,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      request.commodityEmoji,
-                      style: TextStyle(fontSize: 18.sp),
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      request.commodityName,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  BuyerTypeBadge(type: request.buyerType),
-                ],
+              Container(
+                width: 8.w,
+                height: 8.w,
+                margin: EdgeInsets.only(right: 8.w),
+                decoration:
+                    BoxDecoration(color: theme.primary, shape: BoxShape.circle),
               ),
-              Padding(
-                padding: EdgeInsets.only(left: 50.w, top: 2.h),
+              Container(
+                width: 40.w,
+                height: 40.w,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.scaffoldGrey,
+                  shape: BoxShape.circle,
+                ),
                 child: Text(
-                  '${request.buyerName} · ${request.location}',
+                  request.commodityEmoji,
+                  style: TextStyle(fontSize: 18.sp),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  request.commodityName,
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.textSecondary,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
-              SizedBox(height: 12.h),
-              Text(
-                '${request.quantityKg.toStringAsFixed(0)} kg · ${request.periodLabel}',
-                style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+              BuyerTypeBadge(type: request.buyerType),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 66.w, top: 2.h),
+            child: Text(
+              '${request.buyerName} · ${request.location}',
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: AppColors.textSecondary,
               ),
-              SizedBox(height: 6.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Rp ${_formatRupiah(request.pricePerKg)}/kg',
-                      style: TextStyle(
-                        fontSize: 14.5.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.greenprimary,
-                      ),
-                    ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            '${request.quantityKg.toStringAsFixed(0)} kg · ${request.periodLabel}',
+            style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+          ),
+          SizedBox(height: 6.h),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _priceLabel(),
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.bold,
+                    color: theme.primary,
                   ),
-                  OutlinedButton(
-                    onPressed: onDetailTap,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.borderDefault),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                    ),
-                    child: Text(
-                      'Detail',
-                      style: TextStyle(
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
+                ),
+              ),
+              OutlinedButton(
+                onPressed: () => _openDetail(context),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.borderDefault),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  SizedBox(width: 8.w),
-                  ElevatedButton(
-                    onPressed: isApplied ? null : onApplyTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          isApplied ? AppColors.lightgreen : AppColors.darkgreen,
-                      disabledBackgroundColor: AppColors.lightgreen,
-                      elevation: 0,
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                    ),
-                    child: Text(
-                      isApplied ? 'Diajukan' : 'Ajukan →',
-                      style: TextStyle(
-                        fontSize: 12.5.sp,
-                        fontWeight: FontWeight.w600,
-                        color: isApplied ? AppColors.greenprimary : Colors.white,
-                      ),
-                    ),
+                ),
+                child: Text(
+                  'Detail',
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
-                ],
+                ),
+              ),
+              SizedBox(width: 8.w),
+              ElevatedButton(
+                onPressed: isApplied ? null : onApplyTap,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isApplied ? theme.primaryLight : theme.primaryDark,
+                  disabledBackgroundColor: theme.primaryLight,
+                  elevation: 0,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                ),
+                child: Text(
+                  _actionLabel(isApplied),
+                  style: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isApplied ? theme.primary : Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-        Positioned(
-          top: -3.h,
-          left: 14.w,
-          child: Container(
-            width: 9.w,
-            height: 9.w,
-            decoration: BoxDecoration(
-              color: AppColors.greenprimary,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.5),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -197,7 +216,8 @@ class BuyerTypeBadge extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20.r)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20.r)),
       child: Text(
         type.label,
         style: TextStyle(fontSize: 10.5.sp, fontWeight: FontWeight.w600, color: fg),
