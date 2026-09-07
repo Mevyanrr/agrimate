@@ -64,12 +64,12 @@ class _HomeBody extends StatelessWidget {
             }
             return Column(
               children: [
-               HomeAppBar(
-  roleLabel: 'Petani',
-  accentColor: AppColors.greenprimary,
-  onNotificationTap: () => vm.onNotificationPressed(context),
-  onSettingsTap: () => vm.onSettingsPressed(context),
-),
+                HomeAppBar(
+                  roleLabel: 'Petani',
+                  accentColor: AppColors.greenprimary,
+                  onNotificationTap: () => vm.onNotificationPressed(context),
+                  onSettingsTap: () => vm.onSettingsPressed(context),
+                ),
                 Expanded(
                   child: RefreshIndicator(
                     color: AppColors.greenprimary,
@@ -145,8 +145,6 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.read<HomeViewModel>();
-
     return Column(
       children: [
         Row(
@@ -154,17 +152,26 @@ class _HeaderSection extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24.r,
-              backgroundColor: AppColors.textSecondary,
-              backgroundImage: profile.photoUrl != null
-                  ? NetworkImage(profile.photoUrl!)
-                  : null,
+              backgroundColor: AppColors.lightgreen,
               child: profile.photoUrl == null
                   ? Icon(
                       Icons.person,
                       color: AppColors.greenprimary,
                       size: 24.sp,
                     )
-                  : null,
+                  : ClipOval(
+                      child: Image.network(
+                        profile.photoUrl!,
+                        width: 48.r,
+                        height: 48.r,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Icon(
+                          Icons.person,
+                          color: AppColors.greenprimary,
+                          size: 24.sp,
+                        ),
+                      ),
+                    ),
             ),
             SizedBox(width: 12.w),
             Expanded(

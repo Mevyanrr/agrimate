@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../../../core/errors/backend_exception.dart';
 import '../../../../core/result/result.dart';
 import '../../domain/entities/profile_entity.dart';
@@ -25,6 +27,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     fullName: value.fullName,
     role: value.role,
     businessName: value.businessName,
+    photoUrl: value.photoUrl,
   );
 
   @override
@@ -37,4 +40,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Result<ProfileEntity>> updateMine(ProfileEntity profile) =>
       _guard(() => _source.updateMine(_model(profile)));
+
+  @override
+  Future<Result<String>> uploadPhoto({
+    required Uint8List bytes,
+    required String fileName,
+  }) => _guard(() => _source.uploadPhoto(bytes: bytes, fileName: fileName));
 }

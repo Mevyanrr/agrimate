@@ -39,13 +39,33 @@ class _ProfileBody extends StatelessWidget {
       backgroundColor: AppColors.scaffoldGrey,
       bottomNavigationBar: AppBottomNav(
         currentIndex: vm.currentNavIndex,
-        accentColor: AppColors.greenprimary,
+        accentColor: accentColor,
         onTap: (index) => vm.onNavTap(context, index),
       ),
       body: SafeArea(
         bottom: false,
         child: vm.state == ProfileLoadState.loading
             ? Center(child: CircularProgressIndicator(color: accentColor))
+            : vm.state == ProfileLoadState.error || vm.profile == null
+            ? Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.w),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        vm.errorMessage ?? 'Gagal memuat profil.',
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 12.h),
+                      ElevatedButton(
+                        onPressed: vm.fetchProfile,
+                        child: const Text('Coba lagi'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -278,15 +298,14 @@ class _ProfileCard extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20.r),
                     ),
-                    child:
-                        Text(
-                          'Terverifikasi',
-                          style: TextStyle(
-                            color: AppColors.greenprimary,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    child: Text(
+                      'Terverifikasi',
+                      style: TextStyle(
+                        color: AppColors.greenprimary,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
               ],
             ),

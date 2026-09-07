@@ -15,11 +15,7 @@ class _SplashPage2State extends State<SplashPage2> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SplashViewModel>().startTimer(
-            context: context,
-            duration: const Duration(seconds: 2),
-            nextRoute: '/onboarding',
-          );
+      context.read<SplashViewModel>().resolveInitialRoute(context: context);
     });
   }
 

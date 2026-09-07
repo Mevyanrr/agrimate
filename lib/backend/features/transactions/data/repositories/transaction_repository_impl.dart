@@ -25,4 +25,22 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Failure<MarketTransaction?>('$error');
     }
   }
+
+  @override
+  Future<Result<void>> submitRating({
+    required String transactionId,
+    required int rating,
+    String? comment,
+  }) async {
+    try {
+      await _source.submitRating(
+        transactionId: transactionId,
+        rating: rating,
+        comment: comment,
+      );
+      return const Success<void>(null);
+    } catch (error) {
+      return Failure<void>('$error');
+    }
+  }
 }

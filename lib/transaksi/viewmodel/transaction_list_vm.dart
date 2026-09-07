@@ -1,3 +1,5 @@
+import 'package:agrimate/backend/backend_dependencies.dart';
+import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/transaksi/model/transaction.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ enum TransactionLoadState { loading, loaded, error }
 
 class TransactionListViewModel extends ChangeNotifier {
   final UserRole role;
+  final BackendDependencies _backend = BackendDependencies.create();
 
   TransactionListViewModel({required this.role}) {
     fetchTransactions();
@@ -16,6 +19,9 @@ class TransactionListViewModel extends ChangeNotifier {
 
   TransactionSummaryModel? _summary;
   TransactionSummaryModel? get summary => _summary;
+
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
 
   List<TransactionModel> _allTransactions = [];
 
@@ -39,102 +45,65 @@ class TransactionListViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final result = await _backend.transactions.getMine();
+      switch (result) {
+        case Success(data: final transactions):
+          _allTransactions = transactions.map((transaction) {
+            final data = Map<String, dynamic>.from(transaction.data);
+            data['id'] ??= transaction.id;
+            data['counterparty_label'] ??= isPetani ? 'Pembeli' : 'Petani';
+            return TransactionModel.fromJson(data);
+          }).toList();
+        case Failure(message: final message):
+          throw Exception(message);
+      }
 
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _summary = const TransactionSummaryModel(
-        totalTransactions: 4,
-        completedCount: 2,
-        waitingCount: 1,
-        totalValue: 29725000,
+      _summary = TransactionSummaryModel(
+        totalTransactions: _allTransactions.length,
+        completedCount: _allTransactions
+            .where((item) => item.status == TransactionStatus.done)
+            .length,
+        waitingCount: _allTransactions
+            .where((item) => item.status == TransactionStatus.waiting)
+            .length,
+        totalValue: _allTransactions.fold(
+          0,
+          (total, item) => total + item.totalPrice,
+        ),
       );
 
-      _allTransactions = [
-        TransactionModel(
-          id: 'trx_1',
-          commodityName: 'Jagung',
-          commodityEmoji: '🌽',
-          weightKg: 150,
-          transactionDateLabel: '21 Agustus 2026',
-          counterpartyLabel: 'Ke Restoran Sate Khas',
-          totalPrice: 1275000,
-          status: TransactionStatus.waiting,
-          unitPrice: 8500,
-          subtotal: 8500,
-          serviceFeePercent: 5,
-          serviceFee: 63750,
-          totalReceived: 1211250,
-          deliveryDateLabel: '25 Agu 2026',
-          deliveryAddress: 'Jl. Pemuda No. 42, Semarang',
-          phoneNumber: '081234567890',
-          whatsappNumber: '081234567890',
-        ),
-        TransactionModel(
-          id: 'trx_2',
-          commodityName: 'Jagung',
-          commodityEmoji: '🌽',
-          weightKg: 150,
-          transactionDateLabel: '21 Agustus 2026',
-          counterpartyLabel: 'Ke Restoran Sate Khas',
-          totalPrice: 1275000,
-          status: TransactionStatus.confirmed,
-          unitPrice: 8500,
-          subtotal: 8500,
-          serviceFeePercent: 5,
-          serviceFee: 63750,
-          totalReceived: 1211250,
-          deliveryDateLabel: '25 Agu 2026',
-          deliveryAddress: 'Jl. Pemuda No. 42, Semarang',
-          phoneNumber: '081234567890',
-          whatsappNumber: '081234567890',
-        ),
-        TransactionModel(
-          id: 'trx_3',
-          commodityName: 'Jagung',
-          commodityEmoji: '🌽',
-          weightKg: 150,
-          transactionDateLabel: '21 Agustus 2026',
-          counterpartyLabel: 'Ke Restoran Sate Khas',
-          totalPrice: 1275000,
-          status: TransactionStatus.done,
-          unitPrice: 8500,
-          subtotal: 8500,
-          serviceFeePercent: 5,
-          serviceFee: 63750,
-          totalReceived: 1211250,
-          deliveryDateLabel: '25 Agu 2026',
-          deliveryAddress: 'Jl. Pemuda No. 42, Semarang',
-          phoneNumber: '081234567890',
-          whatsappNumber: '081234567890',
-          ratingGiven: null,
-        ),
-        TransactionModel(
-          id: 'trx_4',
-          commodityName: 'Jagung',
-          commodityEmoji: '🌽',
-          weightKg: 150,
-          transactionDateLabel: '21 Agustus 2026',
-          counterpartyLabel: 'Ke Restoran Sate Khas',
-          totalPrice: 1275000,
-          status: TransactionStatus.cancelled,
-          unitPrice: 8500,
-          subtotal: 8500,
-          serviceFeePercent: 5,
-          serviceFee: 63750,
-          totalReceived: 1211250,
-          cancelDateLabel: '25 Agu 2026',
-          cancelReason: 'Pembeli berubah pikiran',
-        ),
-      ];
-
+      _errorMessage = null;
       _state = TransactionLoadState.loaded;
-    } catch (e) {
+    } catch (error) {
+      _errorMessage = error.toString().replaceFirst('Exception: ', '');
       _state = TransactionLoadState.error;
     }
     notifyListeners();
   }
 
   Future<void> onRefresh() => fetchTransactions();
+
+  void onNavTap(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(
+          context,
+          isPetani ? '/home-petani' : '/home-pembeli',
+        );
+        break;
+      case 1:
+        if (isPetani) Navigator.pushReplacementNamed(context, '/pasar');
+        break;
+      case 2:
+        if (isPetani) Navigator.pushReplacementNamed(context, '/rencana-panen');
+        break;
+      case 3:
+        break;
+      case 4:
+        Navigator.pushReplacementNamed(context, '/profil', arguments: role);
+        break;
+    }
+  }
 
   void onTransactionTapped(BuildContext context, TransactionModel trx) {
     Navigator.pushNamed(

@@ -6,6 +6,7 @@ class ProfileModel extends ProfileEntity {
     required super.fullName,
     required super.role,
     super.businessName,
+    super.photoUrl,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +19,7 @@ class ProfileModel extends ProfileEntity {
         final value => throw FormatException('Role tidak dikenal: $value'),
       },
       businessName: json['business_name'] as String?,
+      photoUrl: json['photo_url'] as String?,
     );
   }
 
@@ -26,11 +28,13 @@ class ProfileModel extends ProfileEntity {
     'full_name': fullName,
     'role': role == UserRole.farmer ? 'FARMER' : 'BUYER',
     'business_name': businessName,
+    'photo_url': photoUrl,
   };
 
   /// Role dan ID sengaja tidak dapat diubah dari update profile biasa.
   Map<String, dynamic> toEditableJson() => {
     'full_name': fullName,
     'business_name': businessName,
+    'photo_url': photoUrl,
   };
 }

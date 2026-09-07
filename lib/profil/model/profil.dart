@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:agrimate/role_selection/model/role.dart';
 
 class ProfileModel {
@@ -15,11 +17,7 @@ class ProfileModel {
     this.rating,
   });
 
-  ProfileModel copyWith({
-    String? photoUrl,
-    String? name,
-    String? location,
-  }) {
+  ProfileModel copyWith({String? photoUrl, String? name, String? location}) {
     return ProfileModel(
       photoUrl: photoUrl ?? this.photoUrl,
       name: name ?? this.name,
@@ -38,6 +36,18 @@ class ProfileModel {
       rating: (json['rating'] as num?)?.toDouble(),
     );
   }
+}
+
+class ProfileEditResult {
+  const ProfileEditResult({
+    required this.profile,
+    this.photoBytes,
+    this.photoFileName,
+  });
+
+  final ProfileModel profile;
+  final Uint8List? photoBytes;
+  final String? photoFileName;
 }
 
 class ProfileMenuItem {

@@ -3,6 +3,9 @@ import 'package:agrimate/auth/view/daftar_akun.dart';
 import 'package:agrimate/auth/view/authenticated_home.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
+import 'package:agrimate/ai/view/demand_prediction.dart';
+import 'package:agrimate/history/view/history.dart';
+import 'package:agrimate/notifications/view/notifications.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
 import 'package:agrimate/petani_features/lengkapi_profil/view/lengkapi_profil.dart';
 import 'package:agrimate/petani_features/pasar/view/pasar.dart';
@@ -10,6 +13,8 @@ import 'package:agrimate/petani_features/pasar/viewmodel/pasar_vm.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/rencana_panen.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/tambah_rencana.dart';
 import 'package:agrimate/profil/view/profil.dart';
+import 'package:agrimate/profil/view/edit_profil.dart';
+import 'package:agrimate/profil/model/profil.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/role_selection/view/role.dart';
 import 'package:agrimate/role_selection/viewmodel/role_vm.dart';
@@ -93,6 +98,14 @@ class MyApp extends StatelessWidget {
               '/home-petani': (context) => const HomeView(),
               '/home-pembeli': (context) =>
                   const AuthenticatedHomeView(role: UserRole.pembeli),
+              '/history': (context) {
+                final role =
+                    ModalRoute.of(context)!.settings.arguments as UserRole;
+                return HistoryView(role: role);
+              },
+              '/notifications': (context) => const NotificationsView(),
+              '/notifikasi': (context) => const NotificationsView(),
+              '/demand-prediction': (context) => const DemandPredictionView(),
               '/rencana-panen': (context) => const RencanaPanenView(),
               '/tambah-rencana': (context) => const RencanaFlowPage(),
               '/pasar': (context) => const PasarView(),
@@ -102,6 +115,15 @@ class MyApp extends StatelessWidget {
                     ModalRoute.of(context)?.settings.arguments as UserRole? ??
                     UserRole.petani;
                 return ProfileView(role: role);
+              },
+              '/edit-profile': (context) {
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
+                return EditProfileView(
+                  role: args['role'] as UserRole,
+                  initialProfile: args['profile'] as ProfileModel,
+                );
               },
               '/transaksi': (context) {
                 final role =

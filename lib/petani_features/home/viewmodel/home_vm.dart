@@ -94,7 +94,7 @@ class HomeViewModel extends ChangeNotifier {
 
       _data = HomeDataModel(
         profile: FarmerProfileModel(
-          photoUrl: null,
+          photoUrl: profile?.photoUrl,
           name: profile?.fullName.isNotEmpty == true
               ? profile!.fullName
               : 'Petani',

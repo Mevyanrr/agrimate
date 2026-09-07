@@ -79,6 +79,21 @@ class _AuthenticatedHomeViewState extends State<AuthenticatedHomeView> {
                   Navigator.pushNamed(context, '/demand-prediction'),
             ),
           IconButton(
+            tooltip: 'Transaksi',
+            icon: const Icon(Icons.receipt_long_outlined),
+            onPressed: () => Navigator.pushNamed(
+              context,
+              '/transaksi',
+              arguments: widget.role,
+            ),
+          ),
+          IconButton(
+            tooltip: 'Profil',
+            icon: const Icon(Icons.person_outline),
+            onPressed: () =>
+                Navigator.pushNamed(context, '/profil', arguments: widget.role),
+          ),
+          IconButton(
             tooltip: 'Keluar',
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -133,9 +148,39 @@ class _DashboardBody extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Text(
-                'Halo, ${vm.profile?.fullName.isNotEmpty == true ? vm.profile!.fullName : 'Pengguna'} 👋',
-                style: Theme.of(context).textTheme.headlineSmall,
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: isFarmer
+                        ? Colors.green.shade50
+                        : Colors.orange.shade50,
+                    child: vm.profile?.photoUrl == null
+                        ? Icon(
+                            Icons.person,
+                            color: isFarmer ? Colors.green : Colors.orange,
+                          )
+                        : ClipOval(
+                            child: Image.network(
+                              vm.profile!.photoUrl!,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Icon(
+                                Icons.person,
+                                color: isFarmer ? Colors.green : Colors.orange,
+                              ),
+                            ),
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Halo, ${vm.profile?.fullName.isNotEmpty == true ? vm.profile!.fullName : 'Pengguna'} 👋',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               if (commodity != null)

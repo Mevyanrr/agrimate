@@ -1,30 +1,25 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+import 'package:agrimate/transaksi/model/transaction.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agrimate/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('maps a Supabase transaction row into the frontend model', () {
+    final transaction = TransactionModel.fromJson({
+      'id': 'trx-1',
+      'status': 'COMPLETED',
+      'matched_quantity': 125,
+      'price_per_kg': 8000,
+      'total_amount': 1000000,
+      'created_at': '2026-09-07T10:00:00Z',
+      'commodity': {'name': 'Tomat'},
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(transaction.id, 'trx-1');
+    expect(transaction.commodityName, 'Tomat');
+    expect(transaction.commodityEmoji, '🍅');
+    expect(transaction.weightKg, 125);
+    expect(transaction.unitPrice, 8000);
+    expect(transaction.totalPrice, 1000000);
+    expect(transaction.status, TransactionStatus.done);
+    expect(transaction.transactionDateLabel, '7 Sep 2026');
   });
 }

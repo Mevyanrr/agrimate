@@ -8,6 +8,7 @@ abstract final class DatabaseTables {
   static const String demandForecasts = 'demand_forecasts';
   static const String matches = 'matches';
   static const String transactions = 'transactions';
+  static const String transactionRatings = 'transaction_ratings';
   static const String notifications = 'notifications';
   static const String identityDocuments = 'identity_documents';
   static const String feeTables = 'app_settings';

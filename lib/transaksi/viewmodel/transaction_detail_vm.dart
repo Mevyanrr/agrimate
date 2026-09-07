@@ -1,6 +1,7 @@
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/transaksi/model/transaction.dart';
 import 'package:agrimate/transaksi/view/rating_sheet.dart';
+import 'package:agrimate/transaksi/view/rating_success_sheet.dart';
 import 'package:flutter/material.dart';
 
 class TransactionDetailViewModel extends ChangeNotifier {
@@ -45,12 +46,16 @@ class TransactionDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> onRatePressed(BuildContext context, Color accentColor) async {
-    final rating = await showRatingSheet(context, accentColor: accentColor);
+    final rating = await showRatingSheet(
+      context,
+      accentColor: accentColor,
+      transactionId: transaction.id,
+    );
     if (rating == null) return;
-
 
     transaction = transaction.copyWith(ratingGiven: rating);
     notifyListeners();
+    if (context.mounted) await showRatingSuccessSheet(context);
   }
 
   void onCallPressed(BuildContext context) {
@@ -62,6 +67,6 @@ class TransactionDetailViewModel extends ChangeNotifier {
   }
 
   void onBackPressed(BuildContext context) {
-    Navigator.pop(context, transaction); 
+    Navigator.pop(context, transaction);
   }
 }
