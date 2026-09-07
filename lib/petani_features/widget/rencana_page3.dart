@@ -4,9 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-
 class Page3TanggalView extends StatelessWidget {
-  const Page3TanggalView({super.key});
+  final String title;
+  final String subtitle;
+  final Color accentColor;
+  final Color accentColorLight;
+  final Color accentColorDark;
+
+  const Page3TanggalView({
+    super.key,
+    this.title = 'Kapan perkiraan panen',
+    this.subtitle = 'Pilih rentang tanggal',
+    this.accentColor = AppColors.greenprimary,
+    this.accentColorLight = AppColors.lightgreen,
+    this.accentColorDark = AppColors.darkgreen,
+  });
 
   static const List<String> _bulanPendek = [
     'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
@@ -24,12 +36,12 @@ class Page3TanggalView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Kapan perkiraan panen',
+            title,
             style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           SizedBox(height: 4.h),
           Text(
-            'Pilih rentang tanggal',
+            subtitle,
             style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
           ),
           SizedBox(height: 16.h),
@@ -46,7 +58,7 @@ class Page3TanggalView extends StatelessWidget {
                 SizedBox(height: 12.h),
                 _WeekdayHeader(hariPendek: _hariPendek),
                 SizedBox(height: 4.h),
-                _CalendarGrid(vm: vm),
+                _CalendarGrid(vm: vm, accentColor: accentColor),
               ],
             ),
           ),
@@ -55,12 +67,12 @@ class Page3TanggalView extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: AppColors.lightgreen,
+              color: accentColorLight,
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Row(
               children: [
-                Icon(Icons.access_time, size: 16.sp, color: AppColors.darkgreen),
+                Icon(Icons.access_time, size: 16.sp, color: accentColorDark),
                 SizedBox(width: 8.w),
                 Text(
                   'Estimasi durasi panen:',
@@ -78,7 +90,7 @@ class Page3TanggalView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.darkgreen,
+                      color: accentColorDark,
                     ),
                   ),
                 ),
@@ -200,14 +212,15 @@ class _WeekdayHeader extends StatelessWidget {
 
 class _CalendarGrid extends StatelessWidget {
   final RencanaViewModel vm;
-  const _CalendarGrid({required this.vm});
+  final Color accentColor;
+  const _CalendarGrid({required this.vm, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
     final month = vm.calendarMonth;
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final leadingBlanks = firstDayOfMonth.weekday % 7; 
+    final leadingBlanks = firstDayOfMonth.weekday % 7;
 
     final totalCells = ((leadingBlanks + daysInMonth) / 7).ceil() * 7;
     final prevMonthLastDay = DateTime(month.year, month.month, 0).day;
@@ -237,7 +250,7 @@ class _CalendarGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final date = cells[index];
         final isCurrentMonth = date.month == month.month;
-        return _DateCell(date: date, isCurrentMonth: isCurrentMonth, vm: vm);
+        return _DateCell(date: date, isCurrentMonth: isCurrentMonth, vm: vm, accentColor: accentColor);
       },
     );
   }
@@ -247,8 +260,14 @@ class _DateCell extends StatelessWidget {
   final DateTime date;
   final bool isCurrentMonth;
   final RencanaViewModel vm;
+  final Color accentColor;
 
-  const _DateCell({required this.date, required this.isCurrentMonth, required this.vm});
+  const _DateCell({
+    required this.date,
+    required this.isCurrentMonth,
+    required this.vm,
+    required this.accentColor,
+  });
 
   bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
@@ -273,7 +292,7 @@ class _DateCell extends StatelessWidget {
       textColor = AppColors.textPrimary;
     }
     if (isStart || isEnd) {
-      bgColor = AppColors.greenprimary;
+      bgColor = accentColor;
       textColor = Colors.white;
       fontWeight = FontWeight.w700;
     }

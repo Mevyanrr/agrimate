@@ -13,27 +13,24 @@ import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class RencanaFlowPage extends StatelessWidget {
-  final UserRole role; 
+class RencanaKebutuhanFlowPage extends StatelessWidget {
+  final UserRole role;
 
-  const RencanaFlowPage({
-    super.key,
-    required this.role,
-  });
+  const RencanaKebutuhanFlowPage({super.key, required this.role});
 
-  static const routeName = '/rencana-baru';
+  static const routeName = '/rencana-kebutuhan-baru';
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => RencanaViewModel(role: role), 
-      child: const _RencanaFlowBody(),
+      child: const _RencanaKebutuhanFlowBody(),
     );
   }
 }
 
-class _RencanaFlowBody extends StatelessWidget {
-  const _RencanaFlowBody();
+class _RencanaKebutuhanFlowBody extends StatelessWidget {
+  const _RencanaKebutuhanFlowBody();
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +42,16 @@ class _RencanaFlowBody extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-             HomeAppBar(
-  roleLabel: 'Petani',
-  accentColor: AppColors.greenprimary,
-  onNotificationTap: () => vm.onNotificationPressed(context),
-  onSettingsTap: () => vm.onSettingsPressed(context),
-),
+            HomeAppBar(
+              roleLabel: 'Pembeli',
+              accentColor: AppColors.orangeprimary,
+              onNotificationTap: () => vm.onNotificationPressed(context),
+              onSettingsTap: () => vm.onSettingsPressed(context),
+            ),
             RencanaHeader(
               currentStep: vm.currentStep,
+              accentColor: AppColors.orangeprimary,
+              accentColorLight: AppColors.lightorange,
               onBack: () {
                 if (vm.currentStep == 0) {
                   Navigator.of(context).pop();
@@ -64,20 +63,43 @@ class _RencanaFlowBody extends StatelessWidget {
             Expanded(
               child: PageView(
                 controller: vm.pageController,
-
                 physics: const NeverScrollableScrollPhysics(),
                 children: const [
-                  Page1KomoditasView(),
-                  Page2KuantitasView(),
-                  Page3TanggalView(),
-                  Page4KonfirmasiView(),
+                  Page1KomoditasView(
+                    title: 'Butuh komoditas apa?',
+                    subtitle: 'Pilih jenis komoditas',
+                    accentColor: AppColors.orangeprimary,
+                    accentColorLight: AppColors.lightorange,
+                  ),
+                  Page2KuantitasView(
+                    title: 'Butuh berapa kg?',
+                    subtitle: 'Estimasi berat kebutuhan yang dibutuhkan',
+                    accentColor: AppColors.orangeprimary,
+                    accentColorLight: AppColors.lightorange,
+                  ),
+                  Page3TanggalView(
+                    title: 'Kapan butuhnya?',
+                    accentColor: AppColors.orangeprimary,
+                    accentColorLight: AppColors.lightorange,
+                    accentColorDark: AppColors.darkorange,
+                  ),
+                  Page4KonfirmasiView(
+                    confirmationMessage:
+                        'Setelah diajukan, sistem kami akan mencocokkan kebutuhanmu dengan petani yang tersedia.',
+                    accentColor: AppColors.orangeprimary,
+                    accentColorLight: AppColors.lightorange,
+                    accentColorDark: AppColors.darkorange,
+                    iconBgColor: AppColors.lightorange,
+                    fallbackEmoji: '🧺',
+                  ),
                 ],
               ),
             ),
             RencanaBottomButton(
-              label: isLastStep ? 'Sudah Benar? Cari Pembeli' : 'Lanjut',
+              label: isLastStep ? 'Sudah Benar? Cari Petani' : 'Lanjut',
               enabled: isLastStep ? !vm.isSubmitting : vm.isCurrentStepValid,
               isLoading: vm.isSubmitting,
+              accentColor: AppColors.orangeprimary,
               onPressed: () async {
                 if (!isLastStep) {
                   vm.nextPage();
@@ -90,25 +112,22 @@ class _RencanaFlowBody extends StatelessWidget {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (_) => RencanaSuccessPage(
-                        role: UserRole.petani,
+                        role: vm.role,
                         rencana: RencanaSummaryModel(
                           komoditasName: vm.selectedKomoditas!.name,
                           komoditasEmoji: vm.selectedKomoditas!.emoji,
                           kuantitasKg: vm.kuantitas.toInt(),
                           tanggalMulai: vm.tanggalMulai!,
                           tanggalSelesai: vm.tanggalSelesai!,
-                          lokasiKirim: 'Gudang Brebes', //DUMMY
+                          lokasiKirim: 'Menunggu konfirmasi petani',
                         ),
                       ),
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        vm.submitError ??
-                            'Gagal mengajukan rencana, coba lagi.',
-                      ),
+                    const SnackBar(
+                      content: Text('Gagal mengajukan kebutuhan, coba lagi.'),
                     ),
                   );
                 }

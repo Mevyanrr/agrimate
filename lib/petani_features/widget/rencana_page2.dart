@@ -4,9 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-
 class Page2KuantitasView extends StatelessWidget {
-  const Page2KuantitasView({super.key});
+  final String title;
+  final String subtitle;
+  final Color accentColor;
+  final Color accentColorLight;
+
+  const Page2KuantitasView({
+    super.key,
+    this.title = 'Kira-kira berapa kg?',
+    this.subtitle = 'Estimasi total yang dapat dipanen',
+    this.accentColor = AppColors.greenprimary,
+    this.accentColorLight = AppColors.lightgreen,
+  });
 
   static const List<double> quickPicks = [50, 100, 500, 1000];
 
@@ -20,12 +30,12 @@ class Page2KuantitasView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Kira-kira berapa kg?',
+            title,
             style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           SizedBox(height: 4.h),
           Text(
-            'Estimasi total yang dapat dipanen',
+            subtitle,
             style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
           ),
           SizedBox(height: 36.h),
@@ -38,7 +48,7 @@ class Page2KuantitasView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 40.sp,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.greenprimary,
+                      color: accentColor,
                     ),
                   ),
                   TextSpan(
@@ -46,7 +56,7 @@ class Page2KuantitasView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.greenprimary,
+                      color: accentColor,
                     ),
                   ),
                 ],
@@ -56,10 +66,10 @@ class Page2KuantitasView extends StatelessWidget {
           SizedBox(height: 16.h),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppColors.greenprimary,
-              inactiveTrackColor: AppColors.lightgreen,
-              thumbColor: AppColors.greenprimary,
-              overlayColor: AppColors.greenprimary.withOpacity(0.15),
+              activeTrackColor: accentColor,
+              inactiveTrackColor: accentColorLight,
+              thumbColor: accentColor,
+              overlayColor: accentColor.withOpacity(0.15),
               trackHeight: 4.h,
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 9.r),
             ),
@@ -80,9 +90,9 @@ class Page2KuantitasView extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => vm.setKuantitas(value),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: isSelected ? AppColors.lightgreen : AppColors.surface,
+                      backgroundColor: isSelected ? accentColorLight : AppColors.surface,
                       side: BorderSide(
-                        color: isSelected ? AppColors.greenprimary : AppColors.borderDefault,
+                        color: isSelected ? accentColor : AppColors.borderDefault,
                       ),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
@@ -92,7 +102,7 @@ class Page2KuantitasView extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? AppColors.greenprimary : AppColors.textPrimary,
+                        color: isSelected ? accentColor : AppColors.textPrimary,
                       ),
                     ),
                   ),

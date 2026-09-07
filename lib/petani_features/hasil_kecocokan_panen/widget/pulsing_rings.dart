@@ -4,7 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PulsingRings extends StatefulWidget {
   final String emoji;
-  const PulsingRings({super.key, required this.emoji});
+  final Color color;
+  const PulsingRings({super.key, required this.emoji, required this.color});
 
   @override
   State<PulsingRings> createState() => _PulsingRingsState();
@@ -55,7 +56,7 @@ class _PulsingRingsState extends State<PulsingRings> with SingleTickerProviderSt
 
   Widget _ring(double maxSize, {required double delay}) {
     final t = (_controller.value + delay) % 1.0;
-    final scale = 0.55 + (t * 0.45); // dari 55% -> 100% ukuran container
+    final scale = 0.55 + (t * 0.45); 
     final opacity = (1 - t).clamp(0.0, 1.0) * 0.35;
 
     return Opacity(

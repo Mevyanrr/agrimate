@@ -10,6 +10,7 @@ import 'package:agrimate/petani_features/lengkapi_profil/view/lengkapi_profil.da
 import 'package:agrimate/petani_features/pasar/view/pasar.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/rencana_panen.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/tambah_rencana.dart';
+import 'package:agrimate/petani_features/widget/rencana_flow.dart';
 import 'package:agrimate/profil/view/profil.dart';
 import 'package:agrimate/profil/view/edit_profil.dart';
 import 'package:agrimate/profil/model/profil.dart';
@@ -104,8 +105,14 @@ class MyApp extends StatelessWidget {
               '/notifications': (context) => const NotificationsView(),
               '/notifikasi': (context) => const NotificationsView(),
               '/demand-prediction': (context) => const DemandPredictionView(),
-              '/rencana-panen': (context) => const RencanaPanenView(),
-              '/tambah-rencana': (context) => const RencanaFlowPage(),
+              '/rencana-panen': (context) =>
+                  const RencanaPanenView(role: UserRole.petani),
+              '/rencana-panen-pembeli': (context) =>
+                  const RencanaPanenView(role: UserRole.pembeli),
+              '/tambah-rencana': (context) =>
+                  const RencanaFlowPage(role: UserRole.petani),
+              '/rencana-kebutuhan-baru': (context) =>
+                  const RencanaKebutuhanFlowPage(role: UserRole.pembeli),
               '/pasar': (context) {
                 final role =
                     ModalRoute.of(context)?.settings.arguments as UserRole? ??
@@ -127,6 +134,8 @@ class MyApp extends StatelessWidget {
                     UserRole.petani;
                 return ProfileView(role: role);
               },
+              '/profil-pembeli': (context) =>
+                  const ProfileView(role: UserRole.pembeli),
               '/edit-profile': (context) {
                 final args =
                     ModalRoute.of(context)!.settings.arguments
@@ -142,6 +151,8 @@ class MyApp extends StatelessWidget {
                     UserRole.petani;
                 return TransactionListView(role: role);
               },
+              '/transaksi-pembeli': (context) =>
+                  const TransactionListView(role: UserRole.pembeli),
               '/transaction-detail': (context) {
                 final args =
                     ModalRoute.of(context)!.settings.arguments

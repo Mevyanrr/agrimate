@@ -1,16 +1,14 @@
-import 'package:agrimate/backend/backend_dependencies.dart';
-import 'package:agrimate/backend/core/result/result.dart';
-import 'package:agrimate/backend/features/commodities/domain/entities/commodity.dart';
-import 'package:agrimate/backend/features/supply/domain/entities/supply_forecast.dart';
 import 'package:agrimate/petani_features/home/data/rencana_panen.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
 import 'package:agrimate/petani_features/rencana_panen/model/rencana_panen.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 
 enum RencanaPanenLoadState { loading, loaded, error }
 
 class RencanaPanenViewModel extends ChangeNotifier {
-  final BackendDependencies _backend = BackendDependencies.create();
+  final UserRole role;
+
   RencanaPanenLoadState _state = RencanaPanenLoadState.loading;
   RencanaPanenLoadState get state => _state;
 
@@ -23,7 +21,9 @@ class RencanaPanenViewModel extends ChangeNotifier {
   int _currentNavIndex = 2;
   int get currentNavIndex => _currentNavIndex;
 
-  RencanaPanenViewModel() {
+  bool get isPetani => role == UserRole.petani;
+
+  RencanaPanenViewModel({required this.role}) {
     fetchRencanaData();
   }
 
@@ -32,20 +32,55 @@ class RencanaPanenViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final suppliesResult = await _backend.supplyRepository.getMine();
-      final commoditiesResult = await _backend.commodityRepository
-          .getCommodities();
-      if (suppliesResult case Failure(message: final message)) {
-        throw Exception(message);
-      }
-      final supplies = (suppliesResult as Success<List<SupplyForecast>>).data;
-      final commodities = commoditiesResult is Success<List<Commodity>>
-          ? {for (final item in commoditiesResult.data) item.id: item.name}
-          : <String, String>{};
-      _data = RencanaPanenDataModel(
-        plans: supplies
-            .map((item) => _toHarvestPlan(item, commodities[item.commodityId]))
-            .toList(),
+      await Future.delayed(const Duration(milliseconds: 600));
+      _data = const RencanaPanenDataModel(
+        plans: [
+          HarvestPlanModel(
+            id: 'plan_1',
+            commodityName: 'Tomat',
+            commodityEmoji: '🍅',
+            dateRangeLabel: '25 - 30 Sep 2026',
+            totalWeightKg: 500,
+            allocatedWeightKg: 300,
+            hasMatch: true,
+          ),
+          HarvestPlanModel(
+            id: 'plan_2',
+            commodityName: 'Jagung',
+            commodityEmoji: '🌽',
+            dateRangeLabel: '25 - 30 Sep 2026',
+            totalWeightKg: 400,
+            allocatedWeightKg: 120,
+            hasMatch: false,
+          ),
+          HarvestPlanModel(
+            id: 'plan_3',
+            commodityName: 'Bayam',
+            commodityEmoji: '🥬',
+            dateRangeLabel: '25 - 30 Sep 2026',
+            totalWeightKg: 500,
+            allocatedWeightKg: 0,
+            hasMatch: true,
+          ),
+          HarvestPlanModel(
+            id: 'plan_4',
+            commodityName: 'Cabai Rawit',
+            commodityEmoji: '🌶️',
+            dateRangeLabel: '2 - 6 Okt 2026',
+            totalWeightKg: 250,
+            allocatedWeightKg: 250,
+            hasMatch: false,
+          ),
+          HarvestPlanModel(
+            id: 'plan_5',
+            commodityName: 'Wortel',
+            commodityEmoji: '🥕',
+            dateRangeLabel: '10 - 14 Okt 2026',
+            totalWeightKg: 300,
+            allocatedWeightKg: 90,
+            hasMatch: false,
+          ),
+        ],
       );
 
       _state = RencanaPanenLoadState.loaded;
@@ -58,50 +93,49 @@ class RencanaPanenViewModel extends ChangeNotifier {
 
   Future<void> onRefresh() => fetchRencanaData();
 
-  HarvestPlanModel _toHarvestPlan(SupplyForecast item, String? name) {
-    final commodityName = name ?? 'Komoditas';
-    final remaining =
-        item.remainingQuantity?.toDouble() ?? item.quantity.toDouble();
-    return HarvestPlanModel(
-      id: item.id ?? '',
-      commodityName: commodityName,
-      commodityEmoji: _harvestEmoji(commodityName),
-      dateRangeLabel:
-          '${_formatHarvestDate(item.harvestStartDate)} - ${_formatHarvestDate(item.harvestEndDate)}',
-      totalWeightKg: item.quantity.toDouble(),
-      allocatedWeightKg: (item.quantity.toDouble() - remaining).clamp(
-        0,
-        item.quantity.toDouble(),
-      ),
-      hasMatch: remaining < item.quantity,
-    );
-  }
-
   void onNavTap(BuildContext context, int index) {
     if (index == _currentNavIndex) return;
     _currentNavIndex = index;
     notifyListeners();
 
+    if (!context.mounted) return;
+
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home-petani');
+        final targetHome = isPetani ? '/home-petani' : '/home-pembeli';
+        Navigator.pushReplacementNamed(context, targetHome, arguments: role);
+        break;
       case 1:
-        Navigator.pushNamed(context, '/pasar');
+        Navigator.pushReplacementNamed(context, '/pasar', arguments: role);
         break;
       case 2:
-        Navigator.pushNamed(context, '/rencana-panen');
+        final targetMenu = isPetani
+            ? '/rencana-panen'
+            : '/rencana-panen-pembeli';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
-        Navigator.pushNamed(context, '/transaksi');
+        final targetTransaksi = isPetani ? '/transaksi' : '/transaksi-pembeli';
+        Navigator.pushReplacementNamed(
+          context,
+          targetTransaksi,
+          arguments: role,
+        );
         break;
       case 4:
-        Navigator.pushNamed(context, '/profil');
+        final targetProfil = isPetani ? '/profil' : '/profil-pembeli';
+        Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
         break;
     }
   }
 
+  // Arahkan ke rute yang sesuai berdasarkan role pengguna
   void onAddPlanPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/tambah-rencana');
+    if (isPetani) {
+      Navigator.pushNamed(context, '/tambah-rencana');
+    } else {
+      Navigator.pushNamed(context, '/rencana-kebutuhan-baru');
+    }
   }
 
   void onNotificationPressed(BuildContext context) {
@@ -117,28 +151,12 @@ class RencanaPanenViewModel extends ChangeNotifier {
   }
 }
 
-String _harvestEmoji(String name) {
-  final value = name.toLowerCase();
-  if (value.contains('tomat')) return '🍅';
-  if (value.contains('cabai')) return '🌶️';
-  if (value.contains('jagung')) return '🌽';
-  if (value.contains('wortel')) return '🥕';
-  if (value.contains('bawang')) return '🧅';
-  if (value.contains('bayam') || value.contains('sawi')) return '🥬';
-  if (value.contains('kentang')) return '🥔';
-  return '🌾';
-}
-
-String _formatHarvestDate(DateTime value) =>
-    '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
-
 class RencanaViewModel extends ChangeNotifier {
-  RencanaViewModel({RencanaRepository? repository})
-    : _repository = repository ?? RencanaRepositoryImpl() {
-    _loadCommodities();
-  }
+  RencanaViewModel({RencanaRepository? repository, required this.role})
+    : _repository = repository ?? RencanaRepositoryImpl();
 
   final RencanaRepository _repository;
+  final UserRole role;
 
   final PageController pageController = PageController();
   static const int totalSteps = 4;
@@ -147,25 +165,8 @@ class RencanaViewModel extends ChangeNotifier {
   int get currentStep => _currentStep;
 
   // PAGE 1 — Pilih Komoditas
-  List<KomoditasModel> komoditasList = [];
+  final List<KomoditasModel> komoditasList = KomoditasData.list;
   KomoditasModel? selectedKomoditas;
-
-  Future<void> _loadCommodities() async {
-    final result = await BackendDependencies.create().commodityRepository
-        .getCommodities();
-    if (result case Success<List<Commodity>>(data: final items)) {
-      komoditasList = items
-          .map(
-            (item) => KomoditasModel(
-              id: item.id,
-              name: item.name,
-              emoji: _emojiFor(item.name),
-            ),
-          )
-          .toList();
-      notifyListeners();
-    }
-  }
 
   void selectKomoditas(KomoditasModel komoditas) {
     selectedKomoditas = komoditas;
@@ -187,7 +188,7 @@ class RencanaViewModel extends ChangeNotifier {
 
   bool get isPage2Valid => _kuantitasInteracted && kuantitas > 0;
 
-  //PAGE 3 — Pilih Tanggal Panen
+  // PAGE 3 — Pilih Tanggal Panen
   DateTime calendarMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? tanggalMulai;
   DateTime? tanggalSelesai;
@@ -214,6 +215,7 @@ class RencanaViewModel extends ChangeNotifier {
     } else if (date.isBefore(tanggalMulai!)) {
       tanggalMulai = date;
     } else if (date.isAtSameMomentAs(tanggalMulai!)) {
+      // Do nothing
     } else {
       tanggalSelesai = date;
       _repository.saveDraft({
@@ -251,12 +253,8 @@ class RencanaViewModel extends ChangeNotifier {
 
     try {
       return await _repository.submitRencana(payload);
-    } catch (error, stackTrace) {
-      debugPrint('Submit rencana gagal: $error\n$stackTrace');
-      submitError = error
-          .toString()
-          .replaceFirst('Bad state: ', '')
-          .replaceFirst('StateError: ', '');
+    } catch (error) {
+      submitError = error.toString();
       return false;
     } finally {
       isSubmitting = false;
@@ -308,21 +306,6 @@ class RencanaViewModel extends ChangeNotifier {
   void onNotificationPressed(BuildContext context) {
     Navigator.pushNamed(context, '/notifikasi');
   }
-
-  String _emojiFor(String name) {
-    final value = name.toLowerCase();
-    if (value.contains('tomat')) return '🍅';
-    if (value.contains('cabai')) return '🌶️';
-    if (value.contains('jagung')) return '🌽';
-    if (value.contains('wortel')) return '🥕';
-    if (value.contains('bawang')) return '🧅';
-    if (value.contains('bayam') || value.contains('sawi')) return '🥬';
-    if (value.contains('kentang')) return '🥔';
-    return '🌾';
-  }
-
-  String _date(DateTime value) =>
-      '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
 
   void onSettingsPressed(BuildContext context) {
     Navigator.pushNamed(context, '/pengaturan');

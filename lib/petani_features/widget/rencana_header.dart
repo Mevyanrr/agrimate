@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RencanaHeader extends StatelessWidget {
-  final int currentStep; 
+  final int currentStep;
   final int totalSteps;
   final VoidCallback onBack;
+  final String title;
+  final Color accentColor;
+  final Color accentColorLight;
 
   const RencanaHeader({
     super.key,
     required this.currentStep,
     required this.onBack,
     this.totalSteps = 4,
+    this.title = 'Rencana Baru',
+    this.accentColor = AppColors.greenprimary,
+    this.accentColorLight = AppColors.lightgreen,
   });
 
   @override
@@ -27,11 +33,11 @@ class RencanaHeader extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           child: Row(
             children: [
-              _BackButton(onTap: onBack),
+              _BackButton(onTap: onBack, accentColor: accentColor),
               SizedBox(width: 14.w),
               Expanded(
                 child: Text(
-                  'Rencana Baru',
+                  title,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -53,14 +59,14 @@ class RencanaHeader extends StatelessWidget {
         Container(
           height: 3.h,
           width: double.infinity,
-          color: AppColors.lightgreen,
+          color: accentColorLight,
           child: Align(
             alignment: Alignment.centerLeft,
             child: AnimatedFractionallySizedBox(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               widthFactor: progress.clamp(0.0, 1.0),
-              child: Container(color: AppColors.greenprimary),
+              child: Container(color: accentColor),
             ),
           ),
         ),
@@ -68,9 +74,11 @@ class RencanaHeader extends StatelessWidget {
     );
   }
 }
+
 class _BackButton extends StatelessWidget {
   final VoidCallback onTap;
-  const _BackButton({required this.onTap});
+  final Color accentColor;
+  const _BackButton({required this.onTap, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
@@ -96,12 +104,12 @@ class _BackButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.arrow_back, color: AppColors.greenprimary, size: 18.sp),
+              Icon(Icons.arrow_back, color: accentColor, size: 18.sp),
               SizedBox(width: 6.w),
               Text(
                 'Kembali',
                 style: TextStyle(
-                  color: AppColors.greenprimary,
+                  color: accentColor,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                 ),

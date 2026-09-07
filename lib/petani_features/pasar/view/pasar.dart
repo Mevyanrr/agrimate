@@ -6,6 +6,7 @@ import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/petani_features/pasar/widget/buyer_reqcard.dart';
+import 'package:agrimate/petani_features/pasar/widget/pasar_theme.dart';
 import '../model/pasar.dart';
 import '../viewmodel/pasar_vm.dart';
 
@@ -28,10 +29,11 @@ class _PasarBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     final vm = context.watch<PasarViewModel>();
     final isPetani = vm.role == UserRole.petani;
-    final accentColor = isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
+    final accentColor = isPetani
+        ? AppColors.greenprimary
+        : AppColors.orangeprimary;
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
@@ -88,18 +90,23 @@ class _PasarBody extends StatelessWidget {
               ),
             ),
             Container(height: 1, color: AppColors.borderDefault),
-            Expanded(child: _buildContent(context, vm, accentColor)),
+            Expanded(
+              child: _buildContent(context, vm, accentColor, isPetani),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, PasarViewModel vm, Color accentColor) {
+  Widget _buildContent(
+    BuildContext context,
+    PasarViewModel vm,
+    Color accentColor,
+    bool isPetani,
+  ) {
     if (vm.state == PasarLoadState.loading) {
-      return Center(
-        child: CircularProgressIndicator(color: accentColor),
-      );
+      return Center(child: CircularProgressIndicator(color: accentColor));
     }
     if (vm.state == PasarLoadState.error) {
       return _ErrorState(
@@ -110,6 +117,7 @@ class _PasarBody extends StatelessWidget {
     }
 
     final requests = vm.filteredRequests;
+    final cardRole = isPetani ? PasarCardRole.petani : PasarCardRole.pembeli;
 
     return RefreshIndicator(
       color: accentColor,
@@ -125,8 +133,8 @@ class _PasarBody extends StatelessWidget {
                 final request = requests[index];
                 return BuyerRequestCard(
                   request: request,
-                  onDetailTap: () =>
-                      _showBuyerRequestDetailSheet(context, request, accentColor),
+                  role: cardRole,
+                  onDetailTap: () {},
                   onApplyTap: () => vm.onApplyPressed(request),
                 );
               },
@@ -381,284 +389,6 @@ class _ErrorState extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-void _showBuyerRequestDetailSheet(
-  BuildContext context,
-  BuyerRequestModel request,
-  Color accentColor,
-) {
-  final vm = context.read<PasarViewModel>();
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (sheetContext) {
-      return _BuyerRequestDetailSheet(
-        requestId: request.id,
-        initialRequest: request,
-        accentColor: accentColor,
-        onApply: (current) async {
-          await vm.onApplyPressed(current);
-        },
-      );
-    },
-  );
-}
-
-class _BuyerRequestDetailSheet extends StatelessWidget {
-  final String requestId;
-  final BuyerRequestModel initialRequest;
-  final Color accentColor;
-  final Future<void> Function(BuyerRequestModel) onApply;
-
-  const _BuyerRequestDetailSheet({
-    required this.requestId,
-    required this.initialRequest,
-    required this.accentColor,
-    required this.onApply,
-  });
-
-  String _formatRupiah(double value) {
-    final digits = value.toStringAsFixed(0);
-    final buffer = StringBuffer();
-    for (int i = 0; i < digits.length; i++) {
-      final posFromEnd = digits.length - i;
-      buffer.write(digits[i]);
-      if (posFromEnd > 1 && posFromEnd % 3 == 1) buffer.write('.');
-    }
-    return buffer.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<PasarViewModel>(
-      builder: (context, vm, _) {
-        final request = vm.getRequestById(requestId) ?? initialRequest;
-        final isPetani = vm.role == UserRole.petani;
-
-        return Container(
-          padding: EdgeInsets.fromLTRB(
-            20.w,
-            12.h,
-            20.w,
-            24.h + MediaQuery.of(context).viewPadding.bottom,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(28.r),
-              topRight: Radius.circular(28.r),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: AppColors.borderDefault,
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                ),
-              ),
-              SizedBox(height: 18.h),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 56.w,
-                    height: 56.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    child: Text(
-                      request.commodityEmoji,
-                      style: TextStyle(fontSize: 26.sp),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                request.commodityName,
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            BuyerTypeBadge(type: request.buyerType),
-                          ],
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          request.buyerName,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 18.h),
-              _DetailRow(
-                label: 'Lokasi',
-                valueText: request.location,
-                prefixEmoji: '📍',
-              ),
-              _DetailRow(
-                label: 'Periode',
-                valueText: request.periodLabel,
-                prefixEmoji: '🗓️',
-              ),
-              _DetailRow(
-                label: 'Kebutuhan',
-                valueText: '${request.quantityKg.toStringAsFixed(0)} kg',
-              ),
-              _DetailRow(
-                label: 'Frekuensi',
-                valueText: request.frequencyLabel,
-                prefixEmoji: '🔄',
-              ),
-              _DetailRow(
-                label: 'Budget',
-                valueText: 'Rp ${_formatRupiah(request.pricePerKg)}/kg',
-                valueColor: accentColor,
-                showDivider: false,
-              ),
-              SizedBox(height: 18.h),
-              Text(
-                'Deskripsi',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                request.description,
-                style: TextStyle(
-                  fontSize: 12.5.sp,
-                  height: 1.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              // Tombol Aksi (Khusus Petani yang dapat mengajukan penawaran)
-              if (isPetani)
-                SizedBox(
-                  width: double.infinity,
-                  height: 52.h,
-                  child: ElevatedButton(
-                    onPressed: request.isApplied
-                        ? null
-                        : () async {
-                            final navigator = Navigator.of(context);
-                            await onApply(request);
-                            navigator.pop();
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: request.isApplied
-                          ? AppColors.lightgreen
-                          : accentColor,
-                      disabledBackgroundColor: AppColors.lightgreen,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                    ),
-                    child: Text(
-                      request.isApplied ? 'Sudah Diajukan' : 'Ajukan Penawaran →',
-                      style: TextStyle(
-                        color: request.isApplied
-                            ? AppColors.greenprimary
-                            : Colors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String valueText;
-  final String? prefixEmoji;
-  final Color? valueColor;
-  final bool showDivider;
-
-  const _DetailRow({
-    required this.label,
-    required this.valueText,
-    this.prefixEmoji,
-    this.valueColor,
-    this.showDivider = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Row(
-                children: [
-                  if (prefixEmoji != null) ...[
-                    Text(prefixEmoji!, style: TextStyle(fontSize: 13.sp)),
-                    SizedBox(width: 6.w),
-                  ],
-                  Text(
-                    valueText,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      fontWeight: FontWeight.bold,
-                      color: valueColor ?? AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        if (showDivider) Container(height: 1, color: AppColors.borderDefault),
-      ],
     );
   }
 }

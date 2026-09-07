@@ -1,3 +1,4 @@
+
 enum BuyerType { restoran, distributor, catering, koperasi }
 
 extension BuyerTypeX on BuyerType {
@@ -69,10 +70,12 @@ class BuyerRequestModel {
   final double quantityKg;
   final String periodLabel;
   final double pricePerKg;
+  final double? maxPricePerKg;
+  final String frequencyLabel;
+  final String description;
   final DateTime neededDate;
   final bool isApplied;
-   final String frequencyLabel;
-  final String description;
+final double? minOrderKg;
 
   const BuyerRequestModel({
     required this.id,
@@ -85,10 +88,12 @@ class BuyerRequestModel {
     required this.quantityKg,
     required this.periodLabel,
     required this.pricePerKg,
-    required this.neededDate,
-    this.isApplied = false,
+    this.maxPricePerKg,
     required this.frequencyLabel,
     required this.description,
+    required this.neededDate,
+    this.isApplied = false,
+  this.minOrderKg,
   });
 
   factory BuyerRequestModel.fromJson(Map<String, dynamic> json) {
@@ -103,11 +108,13 @@ class BuyerRequestModel {
       quantityKg: (json['quantity_kg'] as num?)?.toDouble() ?? 0,
       periodLabel: json['period_label'] as String? ?? '-',
       pricePerKg: (json['price_per_kg'] as num?)?.toDouble() ?? 0,
+      maxPricePerKg: (json['max_price_per_kg'] as num?)?.toDouble(),
+      frequencyLabel: json['frequency_label'] as String? ?? '-',
+      description: json['description'] as String? ?? '-',
       neededDate: DateTime.tryParse(json['needed_date'] as String? ?? '') ??
           DateTime.now(),
       isApplied: json['is_applied'] as bool? ?? false,
-      frequencyLabel: json['frequency_label'] as String? ?? '-',
-      description: json['description'] as String? ?? '-',
+      minOrderKg: (json['minOrderKg'] as num?)?.toDouble(),
     );
   }
 
@@ -123,10 +130,11 @@ class BuyerRequestModel {
       quantityKg: quantityKg,
       periodLabel: periodLabel,
       pricePerKg: pricePerKg,
-      neededDate: neededDate,
-      isApplied: isApplied ?? this.isApplied,
+      maxPricePerKg: maxPricePerKg,
       frequencyLabel: frequencyLabel,
       description: description,
+      neededDate: neededDate,
+      isApplied: isApplied ?? this.isApplied,
     );
   }
 }

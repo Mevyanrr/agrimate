@@ -2,18 +2,21 @@ import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/petani_features/widget/card_rencanapanen.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/rencana_panen_vm.dart';
 
 class RencanaPanenView extends StatelessWidget {
-  const RencanaPanenView({super.key});
+  final UserRole role;
+
+  const RencanaPanenView({super.key, required this.role});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RencanaPanenViewModel(),
+      create: (_) => RencanaPanenViewModel(role: role),
       child: const _RencanaPanenBody(),
     );
   }
@@ -25,52 +28,67 @@ class _RencanaPanenBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<RencanaPanenViewModel>();
+    final accentColor = vm.isPetani
+        ? AppColors.greenprimary
+        : AppColors.orangeprimary;
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
       bottomNavigationBar: AppBottomNav(
         currentIndex: vm.currentNavIndex,
-        accentColor: AppColors.greenprimary,
+        accentColor: accentColor,
         onTap: (index) => vm.onNavTap(context, index),
       ),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-             HomeAppBar(
-  roleLabel: 'Petani',
-  accentColor: AppColors.greenprimary,
-  onNotificationTap: () => vm.onNotificationPressed(context),
-  onSettingsTap: () => vm.onSettingsPressed(context),
-),
-            _RencanaPanenHeader(onAddTap: () => vm.onAddPlanPressed(context)),
-            Expanded(child: _buildContent(context, vm)),
+            HomeAppBar(
+              roleLabel: vm.isPetani ? 'Petani' : 'Pembeli',
+              accentColor: accentColor,
+              onNotificationTap: () => vm.onNotificationPressed(context),
+              onSettingsTap: () => vm.onSettingsPressed(context),
+            ),
+            _RencanaPanenHeader(
+              accentColor: accentColor,
+  onAddTap: () => vm.onAddPlanPressed(context),
+
+            ),
+            Expanded(child: _buildContent(context, vm, accentColor)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, RencanaPanenViewModel vm) {
+  Widget _buildContent(
+    BuildContext context,
+    RencanaPanenViewModel vm,
+    Color accentColor,
+  ) {
     if (vm.state == RencanaPanenLoadState.loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.greenprimary),
+      return Center(
+        child: CircularProgressIndicator(color: accentColor),
       );
     }
     if (vm.state == RencanaPanenLoadState.error) {
       return _ErrorState(
         message: vm.errorMessage ?? 'Terjadi kesalahan',
+        accentColor: accentColor,
         onRetry: vm.fetchRencanaData,
       );
     }
 
-    final plans = vm.data!.plans;
+    final plans = vm.data?.plans ?? [];
 
     return RefreshIndicator(
-      color: AppColors.greenprimary,
+      color: accentColor,
       onRefresh: vm.onRefresh,
       child: plans.isEmpty
-          ? _EmptyState(onCreatePlan: () => vm.onAddPlanPressed(context))
+          ? _EmptyState(
+              accentColor: accentColor,
+              onCreatePlan: () => vm.onAddPlanPressed(context),
+            )
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
@@ -89,8 +107,13 @@ class _RencanaPanenBody extends StatelessWidget {
 }
 
 class _RencanaPanenHeader extends StatelessWidget {
+  final Color accentColor;
   final VoidCallback onAddTap;
-  const _RencanaPanenHeader({required this.onAddTap});
+
+  const _RencanaPanenHeader({
+    required this.accentColor,
+    required this.onAddTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +125,7 @@ class _RencanaPanenHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Rencana Panen Saya',
+            'Rencana Panen',
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 17.sp,
@@ -110,24 +133,26 @@ class _RencanaPanenHeader extends StatelessWidget {
             ),
           ),
           Material(
-            color: AppColors.greenprimary,
+            color: accentColor,
             borderRadius: BorderRadius.circular(12.r),
             child: InkWell(
               borderRadius: BorderRadius.circular(12.r),
-             onTap: () { Navigator.pushNamed( context, '/tambah-rencana', ); },
+              onTap: onAddTap,
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                child: 
-                Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text('Tambah',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        )),
+                    Text(
+                      'Tambah',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
                     Icon(
                       Icons.add_rounded,
                       color: Colors.white,
@@ -145,8 +170,13 @@ class _RencanaPanenHeader extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
+  final Color accentColor;
   final VoidCallback onCreatePlan;
-  const _EmptyState({required this.onCreatePlan});
+
+  const _EmptyState({
+    required this.accentColor,
+    required this.onCreatePlan,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +208,7 @@ class _EmptyState extends StatelessWidget {
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'Buat rencana panen pertamamu untuk mulai terhubung dengan pembeli.',
+                      'Buat rencana panen pertamamu untuk mulai terhubung dengan pengguna lain.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12.5.sp,
@@ -189,7 +219,7 @@ class _EmptyState extends StatelessWidget {
                     ElevatedButton(
                       onPressed: onCreatePlan,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.greenprimary,
+                        backgroundColor: accentColor,
                         elevation: 0,
                         padding: EdgeInsets.symmetric(
                           horizontal: 20.w,
@@ -221,9 +251,14 @@ class _EmptyState extends StatelessWidget {
 
 class _ErrorState extends StatelessWidget {
   final String message;
+  final Color accentColor;
   final VoidCallback onRetry;
 
-  const _ErrorState({required this.message, required this.onRetry});
+  const _ErrorState({
+    required this.message,
+    required this.accentColor,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +280,7 @@ class _ErrorState extends StatelessWidget {
           ElevatedButton(
             onPressed: onRetry,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.greenprimary,
+              backgroundColor: accentColor,
             ),
             child: const Text(
               'Coba Lagi',

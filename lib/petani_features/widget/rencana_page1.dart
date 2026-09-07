@@ -6,7 +6,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class Page1KomoditasView extends StatelessWidget {
-  const Page1KomoditasView({super.key});
+  final String title;
+  final String subtitle;
+  final Color accentColor;
+  final Color accentColorLight;
+
+  const Page1KomoditasView({
+    super.key,
+    this.title = 'Mau Panen Apa?',
+    this.subtitle = 'Pilih jenis komoditas',
+    this.accentColor = AppColors.greenprimary,
+    this.accentColorLight = AppColors.lightgreen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +29,12 @@ class Page1KomoditasView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Mau Panen Apa?',
+            title,
             style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           SizedBox(height: 4.h),
           Text(
-            'Pilih jenis komoditas',
+            subtitle,
             style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
           ),
           SizedBox(height: 18.h),
@@ -43,6 +54,8 @@ class Page1KomoditasView extends StatelessWidget {
               return _KomoditasCard(
                 komoditas: item,
                 selected: selected,
+                accentColor: accentColor,
+                accentColorLight: accentColorLight,
                 onTap: () => vm.selectKomoditas(item),
               );
             },
@@ -56,11 +69,15 @@ class Page1KomoditasView extends StatelessWidget {
 class _KomoditasCard extends StatelessWidget {
   final KomoditasModel komoditas;
   final bool selected;
+  final Color accentColor;
+  final Color accentColorLight;
   final VoidCallback onTap;
 
   const _KomoditasCard({
     required this.komoditas,
     required this.selected,
+    required this.accentColor,
+    required this.accentColorLight,
     required this.onTap,
   });
 
@@ -73,10 +90,10 @@ class _KomoditasCard extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.symmetric(horizontal: 12.w),
         decoration: BoxDecoration(
-          color: selected ? AppColors.lightgreen : AppColors.surface,
+          color: selected ? accentColorLight : AppColors.surface,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: selected ? AppColors.greenprimary : AppColors.borderDefault,
+            color: selected ? accentColor : AppColors.borderDefault,
             width: selected ? 1.5 : 1,
           ),
         ),

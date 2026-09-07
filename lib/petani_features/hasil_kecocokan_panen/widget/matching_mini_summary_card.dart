@@ -1,11 +1,13 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/model/rencana_summary_model.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MatchingMiniSummaryCard extends StatelessWidget {
   final RencanaSummaryModel rencana;
-  const MatchingMiniSummaryCard({super.key, required this.rencana});
+  final UserRole role;
+  const MatchingMiniSummaryCard({super.key, required this.rencana, required this.role});
 
   @override
   Widget build(BuildContext context) {
