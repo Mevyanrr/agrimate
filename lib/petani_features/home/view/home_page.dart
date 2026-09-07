@@ -1,20 +1,23 @@
 import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/core/widget/navbar_petani.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
-import 'package:agrimate/core/widget/appbar.dart';
 import 'package:agrimate/petani_features/widget/card_rencanapanen.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/home_vm.dart';
 
 class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+  final UserRole role;
+
+  const HomeView({super.key, required this.role});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => HomeViewModel(),
+      create: (_) => HomeViewModel(role: role),
       child: const _HomeBody(),
     );
   }
@@ -31,7 +34,7 @@ class _HomeBody extends StatelessWidget {
       backgroundColor: AppColors.scaffoldGrey,
       bottomNavigationBar: AppBottomNav(
         currentIndex: vm.currentNavIndex,
-        accentColor: AppColors.greenprimary,
+        accentColor: vm.primaryColor,
         onTap: (index) => vm.onNavTap(context, index),
       ),
       body: SafeArea(
@@ -39,14 +42,15 @@ class _HomeBody extends StatelessWidget {
         child: Builder(
           builder: (context) {
             if (vm.state == HomeLoadState.loading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.greenprimary),
+              return Center(
+                child: CircularProgressIndicator(color: vm.primaryColor),
               );
             }
             if (vm.state == HomeLoadState.error) {
               return _ErrorState(
                 message: vm.errorMessage ?? 'Terjadi kesalahan',
                 onRetry: vm.fetchHomeData,
+                primaryColor: vm.primaryColor,
               );
             }
             if (vm.profileIncomplete) {
@@ -56,6 +60,7 @@ class _HomeBody extends StatelessWidget {
                   context,
                   '/lengkapi-profil',
                   (route) => false,
+                  arguments: {'role': vm.role},
                 );
               });
               return const Center(
@@ -65,14 +70,14 @@ class _HomeBody extends StatelessWidget {
             return Column(
               children: [
                 HomeAppBar(
-                  roleLabel: 'Petani',
-                  accentColor: AppColors.greenprimary,
+                  roleLabel: vm.roleLabel,
+                  accentColor: vm.primaryColor,
                   onNotificationTap: () => vm.onNotificationPressed(context),
                   onSettingsTap: () => vm.onSettingsPressed(context),
                 ),
                 Expanded(
                   child: RefreshIndicator(
-                    color: AppColors.greenprimary,
+                    color: vm.primaryColor,
                     onRefresh: vm.onRefresh,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -88,26 +93,31 @@ class _HomeBody extends StatelessWidget {
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              // crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                _HeaderSection(profile: vm.data!.profile),
+                                _HeaderSection(
+                                  profile: vm.data!.profile,
+                                  primaryColor: vm.primaryColor,
+                                ),
                                 SizedBox(height: 54.h),
-                                _SummaryRow(summary: vm.data!.summary),
-
+                                _SummaryRow(summary: vm.data!.summary, vm: vm),
                                 if (vm.data!.buyerMatch.hasMatch) ...[
-                                  _BuyerMatchCard(
+                                  _MatchCard(
                                     match: vm.data!.buyerMatch,
+                                    vm: vm,
                                     onTap: () =>
                                         vm.onBuyerMatchPressed(context),
                                   ),
                                   SizedBox(height: 16.h),
                                 ],
                                 _CreatePlanButton(
+                                  label: vm.createButtonLabel,
+                                  primaryColor: vm.primaryColor,
                                   onTap: () => vm.onCreatePlanPressed(context),
                                 ),
                                 SizedBox(height: 24.h),
                                 _SectionHeader(
-                                  title: 'Rencana Panen Terakhir',
+                                  title: vm.sectionTitle,
+                                  primaryColor: vm.primaryColor,
                                   onSeeAll: () =>
                                       vm.onSeeAllPlansPressed(context),
                                 ),
@@ -141,7 +151,9 @@ class _HomeBody extends StatelessWidget {
 
 class _HeaderSection extends StatelessWidget {
   final FarmerProfileModel profile;
-  const _HeaderSection({required this.profile});
+  final Color primaryColor;
+
+  const _HeaderSection({required this.profile, required this.primaryColor});
 
   @override
   Widget build(BuildContext context) {
@@ -154,11 +166,7 @@ class _HeaderSection extends StatelessWidget {
               radius: 24.r,
               backgroundColor: AppColors.lightgreen,
               child: profile.photoUrl == null
-                  ? Icon(
-                      Icons.person,
-                      color: AppColors.greenprimary,
-                      size: 24.sp,
-                    )
+                  ? Icon(Icons.person, color: primaryColor, size: 24.sp)
                   : ClipOval(
                       child: Image.network(
                         profile.photoUrl!,
@@ -206,10 +214,16 @@ class _HeaderSection extends StatelessWidget {
 
 class _SummaryRow extends StatelessWidget {
   final HomeSummaryModel summary;
-  const _SummaryRow({required this.summary});
+  final HomeViewModel vm;
+
+  const _SummaryRow({required this.summary, required this.vm});
 
   @override
   Widget build(BuildContext context) {
+    final stat2Value = vm.isPetani
+        ? '${summary.totalAllocatedKg.toStringAsFixed(0)} kg'
+        : '${summary.totalAllocatedKg.toStringAsFixed(0)}%';
+
     return Transform.translate(
       offset: Offset(0, -28.h),
       child: Row(
@@ -218,15 +232,17 @@ class _SummaryRow extends StatelessWidget {
             child: _StatCard(
               icon: Icons.event_available_rounded,
               value: '${summary.activePlans}',
-              label: 'Rencana Aktif',
+              label: vm.stat1Label,
+              primaryColor: vm.primaryColor,
             ),
           ),
           SizedBox(width: 10.w),
           Expanded(
             child: _StatCard(
-              icon: Icons.scale_rounded,
-              value: '${summary.totalAllocatedKg.toStringAsFixed(0)} kg',
-              label: 'Total Teralokasi',
+              icon: Icons.speed_rounded,
+              value: stat2Value,
+              label: vm.stat2Label,
+              primaryColor: vm.primaryColor,
             ),
           ),
           SizedBox(width: 10.w),
@@ -234,7 +250,8 @@ class _SummaryRow extends StatelessWidget {
             child: _StatCard(
               icon: Icons.swap_vert_rounded,
               value: '${summary.completedTransactions}',
-              label: 'Transaksi Selesai',
+              label: vm.stat3Label,
+              primaryColor: vm.primaryColor,
             ),
           ),
         ],
@@ -247,11 +264,13 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final Color primaryColor;
 
   const _StatCard({
     required this.icon,
     required this.value,
     required this.label,
+    required this.primaryColor,
   });
 
   @override
@@ -268,8 +287,8 @@ class _StatCard extends StatelessWidget {
           Container(
             width: 44.w,
             height: 44.w,
-            decoration: const BoxDecoration(
-              color: AppColors.greenprimary,
+            decoration: BoxDecoration(
+              color: primaryColor,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.white, size: 26.sp),
@@ -295,20 +314,25 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _BuyerMatchCard extends StatelessWidget {
+class _MatchCard extends StatelessWidget {
   final BuyerMatchModel match;
+  final HomeViewModel vm;
   final VoidCallback onTap;
 
-  const _BuyerMatchCard({required this.match, required this.onTap});
+  const _MatchCard({
+    required this.match,
+    required this.vm,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.lightgreen,
+        color: vm.primaryLightColor,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.greenprimary),
+        border: Border.all(color: vm.primaryColor),
       ),
       child: Row(
         children: [
@@ -317,11 +341,11 @@ class _BuyerMatchCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ada pembeli yang cocok, nih!',
+                  vm.matchTitle,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.greenprimary,
+                    color: vm.primaryColor,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -334,9 +358,9 @@ class _BuyerMatchCard extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '${match.matchCount} ',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.greenprimary,
+                          color: vm.primaryColor,
                         ),
                       ),
                       const TextSpan(text: 'kecocokan menunggu konfirmasimu'),
@@ -350,7 +374,7 @@ class _BuyerMatchCard extends StatelessWidget {
           ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.darkgreen,
+              backgroundColor: vm.primaryColor,
               elevation: 0,
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
               shape: RoundedRectangleBorder(
@@ -373,20 +397,25 @@ class _BuyerMatchCard extends StatelessWidget {
 }
 
 class _CreatePlanButton extends StatelessWidget {
+  final String label;
+  final Color primaryColor;
   final VoidCallback onTap;
-  const _CreatePlanButton({required this.onTap});
+
+  const _CreatePlanButton({
+    required this.label,
+    required this.primaryColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 52.h,
+      width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/tambah-rencana');
-        },
-
+        onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.greenprimary,
+          backgroundColor: primaryColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14.r),
@@ -398,7 +427,7 @@ class _CreatePlanButton extends StatelessWidget {
             const Icon(Icons.add, color: Colors.white, size: 20),
             SizedBox(width: 8.w),
             Text(
-              'Buat Rencana Panen Baru',
+              label,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 15.sp,
@@ -414,9 +443,14 @@ class _CreatePlanButton extends StatelessWidget {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
+  final Color primaryColor;
   final VoidCallback onSeeAll;
 
-  const _SectionHeader({required this.title, required this.onSeeAll});
+  const _SectionHeader({
+    required this.title,
+    required this.primaryColor,
+    required this.onSeeAll,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -440,13 +474,12 @@ class _SectionHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: AppColors.borderDefault),
             ),
-
             child: Text(
               'Lihat Semua',
               style: TextStyle(
                 fontSize: 11.5.sp,
                 fontWeight: FontWeight.w600,
-                color: AppColors.greenprimary,
+                color: primaryColor,
               ),
             ),
           ),
@@ -459,8 +492,13 @@ class _SectionHeader extends StatelessWidget {
 class _ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
+  final Color primaryColor;
 
-  const _ErrorState({required this.message, required this.onRetry});
+  const _ErrorState({
+    required this.message,
+    required this.onRetry,
+    required this.primaryColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -481,9 +519,7 @@ class _ErrorState extends StatelessWidget {
           SizedBox(height: 12.h),
           ElevatedButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.greenprimary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
             child: const Text(
               'Coba Lagi',
               style: TextStyle(color: Colors.white),

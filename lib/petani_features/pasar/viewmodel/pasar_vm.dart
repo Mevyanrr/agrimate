@@ -3,13 +3,16 @@ import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/commodities/domain/entities/commodity.dart';
 import 'package:agrimate/backend/features/demand/domain/entities/demand_forecast.dart';
 import 'package:flutter/material.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import '../model/pasar.dart';
 
 enum PasarLoadState { loading, loaded, error }
 
 class PasarViewModel extends ChangeNotifier {
   final BackendDependencies _backend = BackendDependencies.create();
-  PasarViewModel() {
+  final UserRole role;
+
+  PasarViewModel({required this.role}) {
     fetchPasarData();
   }
 
@@ -33,7 +36,7 @@ class PasarViewModel extends ChangeNotifier {
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
 
-  final int currentNavIndex = 1;
+  int get currentNavIndex => 1;
 
   Future<void> fetchPasarData() async {
     _state = PasarLoadState.loading;
@@ -73,7 +76,8 @@ class PasarViewModel extends ChangeNotifier {
               '${_shortDate(item.neededStartDate)} - ${_shortDate(item.neededEndDate)}',
           pricePerKg: commodity?.price ?? 0,
           frequencyLabel: 'Sesuai kebutuhan',
-          description: 'Permintaan pasokan $name untuk ${item.deliveryAddress}.',
+          description:
+              'Permintaan pasokan $name untuk ${item.deliveryAddress}.',
           neededDate: item.neededStartDate,
         );
       }).toList();
@@ -177,21 +181,65 @@ class PasarViewModel extends ChangeNotifier {
 
   void onNavTap(BuildContext context, int index) {
     if (index == currentNavIndex) return;
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/home-petani');
-        break;
-      case 1:
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/rencana-panen');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/transaksi');
-        break;
-      case 4:
-        Navigator.pushReplacementNamed(context, '/profil');
-        break;
+
+    if (role == UserRole.petani) {
+      switch (index) {
+        case 0:
+          Navigator.pushReplacementNamed(
+            context,
+            '/home-petani',
+            arguments: role,
+          );
+          break;
+        case 1:
+          break;
+        case 2:
+          Navigator.pushReplacementNamed(
+            context,
+            '/rencana-panen',
+            arguments: role,
+          );
+          break;
+        case 3:
+          Navigator.pushReplacementNamed(
+            context,
+            '/transaksi',
+            arguments: role,
+          );
+          break;
+        case 4:
+          Navigator.pushReplacementNamed(context, '/profil', arguments: role);
+          break;
+      }
+    } else {
+      switch (index) {
+        case 0:
+          Navigator.pushReplacementNamed(
+            context,
+            '/home-pembeli',
+            arguments: role,
+          );
+          break;
+        case 1:
+          break;
+        case 2:
+          Navigator.pushReplacementNamed(
+            context,
+            '/demand-prediction',
+            arguments: role,
+          );
+          break;
+        case 3:
+          Navigator.pushReplacementNamed(
+            context,
+            '/transaksi',
+            arguments: role,
+          );
+          break;
+        case 4:
+          Navigator.pushReplacementNamed(context, '/profil', arguments: role);
+          break;
+      }
     }
   }
 }

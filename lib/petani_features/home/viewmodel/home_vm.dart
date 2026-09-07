@@ -2,9 +2,13 @@ import 'package:agrimate/backend/backend_dependencies.dart';
 import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/commodities/domain/entities/commodity.dart';
 import 'package:agrimate/backend/features/dashboard/domain/entities/dashboard_summary.dart';
-import 'package:agrimate/backend/features/profile/domain/entities/profile_entity.dart';
+import 'package:agrimate/backend/features/demand/domain/entities/demand_forecast.dart';
+import 'package:agrimate/backend/features/profile/domain/entities/profile_entity.dart'
+    show ProfileEntity;
 import 'package:agrimate/backend/features/supply/domain/entities/supply_forecast.dart';
+import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +16,7 @@ enum HomeLoadState { loading, loaded, error }
 
 class HomeViewModel extends ChangeNotifier {
   final BackendDependencies _backend = BackendDependencies.create();
+  final UserRole role;
   HomeLoadState _state = HomeLoadState.loading;
   HomeLoadState get state => _state;
 
@@ -27,9 +32,31 @@ class HomeViewModel extends ChangeNotifier {
   int _currentNavIndex = 0;
   int get currentNavIndex => _currentNavIndex;
 
-  HomeViewModel() {
+  HomeViewModel({required this.role}) {
     fetchHomeData();
   }
+
+  bool get isPetani => role == UserRole.petani;
+
+  Color get primaryColor =>
+      isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
+
+  Color get primaryLightColor =>
+      isPetani ? AppColors.lightgreen : AppColors.lightorange;
+
+  String get roleLabel => isPetani ? 'Petani' : 'Pembeli';
+  String get stat1Label => isPetani ? 'Rencana Aktif' : 'Kebutuhan Aktif';
+  String get stat2Label => isPetani ? 'Total Teralokasi' : 'Terpenuhi';
+  String get stat3Label => isPetani ? 'Transaksi Selesai' : 'Pesanan';
+
+  String get matchTitle =>
+      isPetani ? 'Ada pembeli yang cocok, nih!' : 'Ada petani yang cocok, nih!';
+
+  String get createButtonLabel =>
+      isPetani ? 'Buat Rencana Panen Baru' : 'Buat Kebutuhan Baru';
+
+  String get sectionTitle =>
+      isPetani ? 'Rencana Panen Terakhir' : 'Kebutuhan Terakhir';
 
   Future<void> fetchHomeData() async {
     _state = HomeLoadState.loading;
@@ -43,6 +70,7 @@ class HomeViewModel extends ChangeNotifier {
       final profileResult = await _backend.profileRepository.getMine();
       final summaryResult = await _backend.dashboardRepository.getSummary();
       final suppliesResult = await _backend.supplyRepository.getMine();
+      final demandsResult = await _backend.demandRepository.getMine();
       final commoditiesResult = await _backend.commodityRepository
           .getCommodities();
 
@@ -58,6 +86,9 @@ class HomeViewModel extends ChangeNotifier {
       if (commoditiesResult case Failure(message: final message)) {
         debugPrint('Home/commodities: $message');
       }
+      if (demandsResult case Failure(message: final message)) {
+        debugPrint('Home/demands: $message');
+      }
 
       final profile = profileResult is Success<ProfileEntity?>
           ? profileResult.data
@@ -66,7 +97,7 @@ class HomeViewModel extends ChangeNotifier {
       final summary = summaryResult is Success<DashboardSummary>
           ? summaryResult.data
           : const DashboardSummary(
-              role: 'FARMER',
+              role: 'UNKNOWN',
               activeForecasts: 0,
               potentialMatches: 0,
               transactions: 0,
@@ -75,63 +106,101 @@ class HomeViewModel extends ChangeNotifier {
       final supplies = suppliesResult is Success<List<SupplyForecast>>
           ? suppliesResult.data
           : <SupplyForecast>[];
+      final demands = demandsResult is Success<List<DemandForecast>>
+          ? demandsResult.data
+          : <DemandForecast>[];
       final commodityNames = commoditiesResult is Success<List<Commodity>>
           ? {for (final item in commoditiesResult.data) item.id: item.name}
           : <String, String>{};
       Map<String, dynamic>? farmerDetails;
-      try {
-        farmerDetails = await Supabase.instance.client
-            .from('farmer_details')
-            .select('land_address, land_photo_path')
-            .eq('user_id', userId)
-            .maybeSingle();
-      } catch (error) {
-        debugPrint('Home/farmer_details: $error');
+      if (isPetani) {
+        try {
+          farmerDetails = await Supabase.instance.client
+              .from('farmer_details')
+              .select('land_address, land_photo_path')
+              .eq('user_id', userId)
+              .maybeSingle();
+        } catch (error) {
+          debugPrint('Home/farmer_details: $error');
+        }
       }
       final landAddress = farmerDetails?['land_address']?.toString().trim();
-      _profileIncomplete =
-          _profileIncomplete || landAddress == null || landAddress.isEmpty;
+      if (isPetani) {
+        _profileIncomplete =
+            _profileIncomplete || landAddress == null || landAddress.isEmpty;
+      }
 
       _data = HomeDataModel(
         profile: FarmerProfileModel(
           photoUrl: profile?.photoUrl,
           name: profile?.fullName.isNotEmpty == true
               ? profile!.fullName
-              : 'Petani',
-          location: landAddress ?? '-',
+              : roleLabel,
+          location: isPetani
+              ? (landAddress ?? '-')
+              : (profile?.businessName ?? '-'),
         ),
         summary: HomeSummaryModel(
           activePlans: summary.activeForecasts,
-          totalAllocatedKg: supplies.fold<double>(0, (total, item) {
-            final remaining =
-                item.remainingQuantity?.toDouble() ?? item.quantity.toDouble();
-            return total +
-                (item.quantity.toDouble() - remaining).clamp(
-                  0,
-                  item.quantity.toDouble(),
-                );
-          }),
+          totalAllocatedKg: isPetani
+              ? supplies.fold<double>(0, (total, item) {
+                  final remaining =
+                      item.remainingQuantity?.toDouble() ??
+                      item.quantity.toDouble();
+                  return total +
+                      (item.quantity.toDouble() - remaining).clamp(
+                        0,
+                        item.quantity.toDouble(),
+                      );
+                })
+              : demands.fold<double>(0, (total, item) {
+                  final remaining =
+                      item.remainingQuantity?.toDouble() ??
+                      item.quantity.toDouble();
+                  return total +
+                      (item.quantity.toDouble() - remaining).clamp(
+                        0,
+                        item.quantity.toDouble(),
+                      );
+                }),
           completedTransactions: summary.transactions,
         ),
         buyerMatch: BuyerMatchModel(matchCount: summary.potentialMatches),
-        recentPlans: supplies.take(3).map((item) {
-          final name = commodityNames[item.commodityId] ?? 'Komoditas';
-          final remaining =
-              item.remainingQuantity?.toDouble() ?? item.quantity.toDouble();
-          return HarvestPlanModel(
-            id: item.id ?? '',
-            commodityName: name,
-            commodityEmoji: _emojiFor(name),
-            dateRangeLabel:
-                '${_date(item.harvestStartDate)} - ${_date(item.harvestEndDate)}',
-            totalWeightKg: item.quantity.toDouble(),
-            allocatedWeightKg: (item.quantity.toDouble() - remaining).clamp(
-              0,
-              item.quantity.toDouble(),
-            ),
-            hasMatch: remaining < item.quantity,
-          );
-        }).toList(),
+        recentPlans: isPetani
+            ? supplies.take(3).map((item) {
+                final name = commodityNames[item.commodityId] ?? 'Komoditas';
+                final remaining =
+                    item.remainingQuantity?.toDouble() ??
+                    item.quantity.toDouble();
+                return HarvestPlanModel(
+                  id: item.id ?? '',
+                  commodityName: name,
+                  commodityEmoji: _emojiFor(name),
+                  dateRangeLabel:
+                      '${_date(item.harvestStartDate)} - ${_date(item.harvestEndDate)}',
+                  totalWeightKg: item.quantity.toDouble(),
+                  allocatedWeightKg: (item.quantity.toDouble() - remaining)
+                      .clamp(0, item.quantity.toDouble()),
+                  hasMatch: remaining < item.quantity,
+                );
+              }).toList()
+            : demands.take(3).map((item) {
+                final name = commodityNames[item.commodityId] ?? 'Komoditas';
+                final remaining =
+                    item.remainingQuantity?.toDouble() ??
+                    item.quantity.toDouble();
+                return HarvestPlanModel(
+                  id: item.id ?? '',
+                  commodityName: name,
+                  commodityEmoji: _emojiFor(name),
+                  dateRangeLabel:
+                      '${_date(item.neededStartDate)} - ${_date(item.neededEndDate)}',
+                  totalWeightKg: item.quantity.toDouble(),
+                  allocatedWeightKg: (item.quantity.toDouble() - remaining)
+                      .clamp(0, item.quantity.toDouble()),
+                  hasMatch: remaining < item.quantity,
+                );
+              }).toList(),
       );
 
       _state = HomeLoadState.loaded;
@@ -152,18 +221,25 @@ class HomeViewModel extends ChangeNotifier {
 
     switch (index) {
       case 0:
+        final targetHome = (role == UserRole.petani)
+            ? '/home-petani'
+            : '/home-pembeli';
+        Navigator.pushReplacementNamed(context, targetHome, arguments: role);
         break;
       case 1:
-        Navigator.pushNamed(context, '/pasar');
+        Navigator.pushReplacementNamed(context, '/pasar', arguments: role);
         break;
       case 2:
-        Navigator.pushNamed(context, '/rencana-panen');
+        final targetMenu = (role == UserRole.petani)
+            ? '/rencana-panen'
+            : '/demand-prediction';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
-        Navigator.pushNamed(context, '/transaksi');
+        Navigator.pushReplacementNamed(context, '/transaksi', arguments: role);
         break;
       case 4:
-        Navigator.pushNamed(context, '/profil');
+        Navigator.pushReplacementNamed(context, '/profil', arguments: role);
         break;
     }
   }
@@ -181,11 +257,18 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void onCreatePlanPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/tambah-rencana');
+    Navigator.pushNamed(
+      context,
+      isPetani ? '/tambah-rencana' : '/demand-prediction',
+    );
   }
 
   void onSeeAllPlansPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/rencana-panen');
+    Navigator.pushNamed(
+      context,
+      isPetani ? '/rencana-panen' : '/history',
+      arguments: isPetani ? null : role,
+    );
   }
 
   void onPlanCardPressed(BuildContext context, HarvestPlanModel plan) {

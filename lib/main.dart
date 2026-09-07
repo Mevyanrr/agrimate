@@ -1,6 +1,5 @@
 import 'package:agrimate/auth/model/otp.dart';
 import 'package:agrimate/auth/view/daftar_akun.dart';
-import 'package:agrimate/auth/view/authenticated_home.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
 import 'package:agrimate/ai/view/demand_prediction.dart';
@@ -9,7 +8,6 @@ import 'package:agrimate/notifications/view/notifications.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
 import 'package:agrimate/petani_features/lengkapi_profil/view/lengkapi_profil.dart';
 import 'package:agrimate/petani_features/pasar/view/pasar.dart';
-import 'package:agrimate/petani_features/pasar/viewmodel/pasar_vm.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/rencana_panen.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/tambah_rencana.dart';
 import 'package:agrimate/profil/view/profil.dart';
@@ -56,7 +54,6 @@ class MyApp extends StatelessWidget {
           create: (_) => OnboardingViewModel(),
         ),
         ChangeNotifierProvider<RoleViewModel>(create: (_) => RoleViewModel()),
-        ChangeNotifierProvider<PasarViewModel>(create: (_) => PasarViewModel()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(393, 852),
@@ -95,9 +92,10 @@ class MyApp extends StatelessWidget {
                   method: args['method'] as OtpMethod,
                 );
               },
-              '/home-petani': (context) => const HomeView(),
+              '/home-petani': (context) =>
+                  const HomeView(role: UserRole.petani),
               '/home-pembeli': (context) =>
-                  const AuthenticatedHomeView(role: UserRole.pembeli),
+                  const HomeView(role: UserRole.pembeli),
               '/history': (context) {
                 final role =
                     ModalRoute.of(context)!.settings.arguments as UserRole;
@@ -108,8 +106,21 @@ class MyApp extends StatelessWidget {
               '/demand-prediction': (context) => const DemandPredictionView(),
               '/rencana-panen': (context) => const RencanaPanenView(),
               '/tambah-rencana': (context) => const RencanaFlowPage(),
-              '/pasar': (context) => const PasarView(),
-              '/lengkapi-profil': (context) => const LengkapiProfilView(),
+              '/pasar': (context) {
+                final role =
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.petani;
+                return PasarView(role: role);
+              },
+              '/lengkapi-profil': (context) {
+                final args =
+                    ModalRoute.of(context)?.settings.arguments
+                        as Map<String, dynamic>?;
+                final UserRole role =
+                    args?['role'] as UserRole? ?? UserRole.petani;
+
+                return LengkapiProfilView(role: role);
+              },
               '/profil': (context) {
                 final role =
                     ModalRoute.of(context)?.settings.arguments as UserRole? ??

@@ -4,6 +4,8 @@ import 'package:agrimate/backend/core/constants/database_tables.dart';
 import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/profile/domain/entities/profile_entity.dart'
     as backend;
+import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,7 +14,8 @@ import '../model/lengkapi_profil.dart';
 enum SubmitState { idle, submitting, error }
 
 class LengkapiProfilViewModel extends ChangeNotifier {
-  LengkapiProfilViewModel() : _backend = BackendDependencies.create() {
+  LengkapiProfilViewModel({required this.role})
+    : _backend = BackendDependencies.create() {
     for (final controller in [
       namaController,
       whatsappController,
@@ -25,6 +28,15 @@ class LengkapiProfilViewModel extends ChangeNotifier {
   }
 
   final BackendDependencies _backend;
+  final UserRole role;
+
+  bool get isPembeli => role == UserRole.pembeli;
+
+  Color get primaryColor =>
+      isPembeli ? AppColors.orangeprimary : AppColors.greenprimary;
+
+  Color get primaryLightColor =>
+      isPembeli ? AppColors.lightorange : AppColors.lightgreen;
 
   final namaController = TextEditingController();
   final whatsappController = TextEditingController();
@@ -166,7 +178,7 @@ class LengkapiProfilViewModel extends ChangeNotifier {
       final profile = backend.ProfileEntity(
         id: userId,
         fullName: payload.namaLengkap,
-        role: backend.UserRole.farmer,
+        role: isPembeli ? backend.UserRole.buyer : backend.UserRole.farmer,
       );
       if (existing is! Success<backend.ProfileEntity?>) {
         throw Exception('Gagal membaca profil.');
@@ -178,15 +190,17 @@ class LengkapiProfilViewModel extends ChangeNotifier {
         throw Exception(message);
       }
 
-      await Supabase.instance.client.from('farmer_details').upsert({
-        'user_id': userId,
-        'nik': payload.nikKtp,
-        'land_area': payload.luasLahanHektar,
-        'land_address': payload.alamatLahan,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }, onConflict: 'user_id');
+      if (!isPembeli) {
+        await Supabase.instance.client.from('farmer_details').upsert({
+          'user_id': userId,
+          'nik': payload.nikKtp,
+          'land_area': payload.luasLahanHektar,
+          'land_address': payload.alamatLahan,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        }, onConflict: 'user_id');
+      }
 
-      if (payload.fotoLahan != null) {
+      if (!isPembeli && payload.fotoLahan != null) {
         final extension = payload.fotoLahan!.path.split('.').last.toLowerCase();
         final contentType = extension == 'png' ? 'image/png' : 'image/jpeg';
         final landPhotoPath =
@@ -208,7 +222,7 @@ class LengkapiProfilViewModel extends ChangeNotifier {
             .eq('user_id', userId);
       }
 
-      if (payload.fotoKtp != null) {
+      if (!isPembeli && payload.fotoKtp != null) {
         final ktpResult = await _backend.identityVerificationRepository
             .submitFarmer(
               ktpBytes: await payload.fotoKtp!.readAsBytes(),
@@ -223,7 +237,10 @@ class LengkapiProfilViewModel extends ChangeNotifier {
       notifyListeners();
 
       if (context.mounted) {
-        Navigator.pushReplacementNamed(context, '/home-petani');
+        Navigator.pushReplacementNamed(
+          context,
+          isPembeli ? '/home-pembeli' : '/home-petani',
+        );
       }
     } catch (e) {
       _submitState = SubmitState.error;
