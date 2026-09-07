@@ -71,6 +71,8 @@ class BuyerRequestModel {
   final double pricePerKg;
   final DateTime neededDate;
   final bool isApplied;
+   final String frequencyLabel;
+  final String description;
 
   const BuyerRequestModel({
     required this.id,
@@ -85,6 +87,8 @@ class BuyerRequestModel {
     required this.pricePerKg,
     required this.neededDate,
     this.isApplied = false,
+    required this.frequencyLabel,
+    required this.description,
   });
 
   factory BuyerRequestModel.fromJson(Map<String, dynamic> json) {
@@ -102,6 +106,8 @@ class BuyerRequestModel {
       neededDate: DateTime.tryParse(json['needed_date'] as String? ?? '') ??
           DateTime.now(),
       isApplied: json['is_applied'] as bool? ?? false,
+      frequencyLabel: json['frequency_label'] as String? ?? '-',
+      description: json['description'] as String? ?? '-',
     );
   }
 
@@ -119,6 +125,8 @@ class BuyerRequestModel {
       pricePerKg: pricePerKg,
       neededDate: neededDate,
       isApplied: isApplied ?? this.isApplied,
+      frequencyLabel: frequencyLabel,
+      description: description,
     );
   }
 }

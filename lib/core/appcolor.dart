@@ -27,4 +27,14 @@ class AppColors {
   static const Color indicatorInactive = Color(0xFFE2E5E9);
 
   static Color shadowLight = Colors.black.withValues(alpha: 0.08);
+
+  static const Color amberAccent = Color(0xFFF2994A);
+  static const Color amberAccentLight = Color(0xFFFFF0D9);
+
+  static const Color redAccent = Color(0xFFEB5757);
+  static const Color redAccentLight = Color(0xFFFDECEC);
+
+  static const Color goldStar = Color(0xFFFFC107);
+  static const Color goldStarLight = Color(0xFFFFF3D6);
+  static const Color goldButtonBg = Color(0xFFFFF7E0);
 }

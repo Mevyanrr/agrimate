@@ -1,13 +1,17 @@
-import 'package:agrimate/core/appcolor.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeAppBar extends StatelessWidget {
+  final String roleLabel;      
+  final Color accentColor;     
   final VoidCallback onNotificationTap;
   final VoidCallback onSettingsTap;
 
   const HomeAppBar({
     super.key,
+    required this.roleLabel,
+    required this.accentColor,
     required this.onNotificationTap,
     required this.onSettingsTap,
   });
@@ -16,8 +20,8 @@ class HomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
-      decoration: const BoxDecoration(
-        color: AppColors.greenprimary,
+      decoration: BoxDecoration(
+        color: accentColor, 
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -58,9 +62,9 @@ class HomeAppBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
-                    'Petani',
+                    roleLabel, 
                     style: TextStyle(
-                      color: AppColors.greenprimary,
+                      color: accentColor, 
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                     ),

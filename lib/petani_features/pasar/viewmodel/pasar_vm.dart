@@ -72,6 +72,8 @@ class PasarViewModel extends ChangeNotifier {
           periodLabel:
               '${_shortDate(item.neededStartDate)} - ${_shortDate(item.neededEndDate)}',
           pricePerKg: commodity?.price ?? 0,
+          frequencyLabel: 'Sesuai kebutuhan',
+          description: 'Permintaan pasokan $name untuk ${item.deliveryAddress}.',
           neededDate: item.neededStartDate,
         );
       }).toList();
@@ -158,8 +160,11 @@ class PasarViewModel extends ChangeNotifier {
     }
   }
 
-  void onDetailPressed(BuildContext context, BuyerRequestModel request) {
-    Navigator.pushNamed(context, '/pasar/detail', arguments: request.id);
+  BuyerRequestModel? getRequestById(String id) {
+    for (final request in _allRequests) {
+      if (request.id == id) return request;
+    }
+    return null;
   }
 
   void onNotificationPressed(BuildContext context) {
