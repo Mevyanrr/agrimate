@@ -73,10 +73,10 @@ class _AuthenticatedHomeViewState extends State<AuthenticatedHomeView> {
           ),
           if (widget.role == UserRole.pembeli)
             IconButton(
-              tooltip: 'Prediksi kebutuhan',
-              icon: const Icon(Icons.auto_graph),
+              tooltip: 'Buat kebutuhan',
+              icon: const Icon(Icons.add_shopping_cart_outlined),
               onPressed: () =>
-                  Navigator.pushNamed(context, '/demand-prediction'),
+                  Navigator.pushNamed(context, '/rencana-kebutuhan-baru'),
             ),
           IconButton(
             tooltip: 'Transaksi',

@@ -1,3 +1,8 @@
+import 'package:agrimate/backend/backend_dependencies.dart';
+import 'package:agrimate/backend/core/result/result.dart';
+import 'package:agrimate/backend/features/commodities/domain/entities/commodity.dart';
+import 'package:agrimate/backend/features/demand/domain/entities/demand_forecast.dart';
+import 'package:agrimate/backend/features/supply/domain/entities/supply_forecast.dart';
 import 'package:agrimate/petani_features/home/data/rencana_panen.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
 import 'package:agrimate/petani_features/rencana_panen/model/rencana_panen.dart';
@@ -8,6 +13,7 @@ enum RencanaPanenLoadState { loading, loaded, error }
 
 class RencanaPanenViewModel extends ChangeNotifier {
   final UserRole role;
+  final BackendDependencies _backend = BackendDependencies.create();
 
   RencanaPanenLoadState _state = RencanaPanenLoadState.loading;
   RencanaPanenLoadState get state => _state;
@@ -32,56 +38,51 @@ class RencanaPanenViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
-      _data = const RencanaPanenDataModel(
-        plans: [
-          HarvestPlanModel(
-            id: 'plan_1',
-            commodityName: 'Tomat',
-            commodityEmoji: '🍅',
-            dateRangeLabel: '25 - 30 Sep 2026',
-            totalWeightKg: 500,
-            allocatedWeightKg: 300,
-            hasMatch: true,
-          ),
-          HarvestPlanModel(
-            id: 'plan_2',
-            commodityName: 'Jagung',
-            commodityEmoji: '🌽',
-            dateRangeLabel: '25 - 30 Sep 2026',
-            totalWeightKg: 400,
-            allocatedWeightKg: 120,
-            hasMatch: false,
-          ),
-          HarvestPlanModel(
-            id: 'plan_3',
-            commodityName: 'Bayam',
-            commodityEmoji: '🥬',
-            dateRangeLabel: '25 - 30 Sep 2026',
-            totalWeightKg: 500,
-            allocatedWeightKg: 0,
-            hasMatch: true,
-          ),
-          HarvestPlanModel(
-            id: 'plan_4',
-            commodityName: 'Cabai Rawit',
-            commodityEmoji: '🌶️',
-            dateRangeLabel: '2 - 6 Okt 2026',
-            totalWeightKg: 250,
-            allocatedWeightKg: 250,
-            hasMatch: false,
-          ),
-          HarvestPlanModel(
-            id: 'plan_5',
-            commodityName: 'Wortel',
-            commodityEmoji: '🥕',
-            dateRangeLabel: '10 - 14 Okt 2026',
-            totalWeightKg: 300,
-            allocatedWeightKg: 90,
-            hasMatch: false,
-          ),
-        ],
-      );
+      final commoditiesResult = await _backend.commodityRepository
+          .getCommodities();
+      final names = commoditiesResult is Success<List<Commodity>>
+          ? {for (final item in commoditiesResult.data) item.id: item.name}
+          : <String, String>{};
+
+      if (isPetani) {
+        final result = await _backend.supplyRepository.getMine();
+        if (result case Failure(message: final message)) {
+          throw Exception(message);
+        }
+        final values = (result as Success<List<SupplyForecast>>).data;
+        _data = RencanaPanenDataModel(
+          plans: values.map((item) {
+            final name = names[item.commodityId] ?? 'Komoditas';
+            return _forecastPlan(
+              id: item.id,
+              name: name,
+              quantity: item.quantity,
+              remaining: item.remainingQuantity,
+              start: item.harvestStartDate,
+              end: item.harvestEndDate,
+            );
+          }).toList(),
+        );
+      } else {
+        final result = await _backend.demandRepository.getMine();
+        if (result case Failure(message: final message)) {
+          throw Exception(message);
+        }
+        final values = (result as Success<List<DemandForecast>>).data;
+        _data = RencanaPanenDataModel(
+          plans: values.map((item) {
+            final name = names[item.commodityId] ?? 'Komoditas';
+            return _forecastPlan(
+              id: item.id,
+              name: name,
+              quantity: item.quantity,
+              remaining: item.remainingQuantity,
+              start: item.neededStartDate,
+              end: item.neededEndDate,
+            );
+          }).toList(),
+        );
+      }
 
       _state = RencanaPanenLoadState.loaded;
     } catch (e) {
@@ -92,6 +93,27 @@ class RencanaPanenViewModel extends ChangeNotifier {
   }
 
   Future<void> onRefresh() => fetchRencanaData();
+
+  HarvestPlanModel _forecastPlan({
+    String? id,
+    required String name,
+    required num quantity,
+    required num? remaining,
+    required DateTime start,
+    required DateTime end,
+  }) {
+    final total = quantity.toDouble();
+    final left = remaining?.toDouble() ?? total;
+    return HarvestPlanModel(
+      id: id ?? '',
+      commodityName: name,
+      commodityEmoji: _emojiFor(name),
+      dateRangeLabel: '${_date(start)} - ${_date(end)}',
+      totalWeightKg: total,
+      allocatedWeightKg: (total - left).clamp(0, total),
+      hasMatch: left < total,
+    );
+  }
 
   void onNavTap(BuildContext context, int index) {
     if (index == _currentNavIndex) return;
@@ -153,7 +175,9 @@ class RencanaPanenViewModel extends ChangeNotifier {
 
 class RencanaViewModel extends ChangeNotifier {
   RencanaViewModel({RencanaRepository? repository, required this.role})
-    : _repository = repository ?? RencanaRepositoryImpl();
+    : _repository = repository ?? RencanaRepositoryImpl() {
+    _loadCommodities();
+  }
 
   final RencanaRepository _repository;
   final UserRole role;
@@ -165,8 +189,25 @@ class RencanaViewModel extends ChangeNotifier {
   int get currentStep => _currentStep;
 
   // PAGE 1 — Pilih Komoditas
-  final List<KomoditasModel> komoditasList = KomoditasData.list;
+  List<KomoditasModel> komoditasList = [];
   KomoditasModel? selectedKomoditas;
+
+  Future<void> _loadCommodities() async {
+    final result = await BackendDependencies.create().commodityRepository
+        .getCommodities();
+    if (result case Success<List<Commodity>>(data: final items)) {
+      komoditasList = items
+          .map(
+            (item) => KomoditasModel(
+              id: item.id,
+              name: item.name,
+              emoji: _emojiFor(item.name),
+            ),
+          )
+          .toList();
+      notifyListeners();
+    }
+  }
 
   void selectKomoditas(KomoditasModel komoditas) {
     selectedKomoditas = komoditas;
@@ -236,6 +277,7 @@ class RencanaViewModel extends ChangeNotifier {
 
   bool isSubmitting = false;
   String? submitError;
+  String? submittedAddress;
 
   Future<bool> submitRencana() async {
     isSubmitting = true;
@@ -252,7 +294,12 @@ class RencanaViewModel extends ChangeNotifier {
     };
 
     try {
-      return await _repository.submitRencana(payload);
+      final profileResult = await BackendDependencies.create().profileRepository
+          .getMine();
+      if (profileResult case Success(data: final profile?)) {
+        submittedAddress = profile.address;
+      }
+      return await _repository.submitRencana(payload, role);
     } catch (error) {
       submitError = error.toString();
       return false;
@@ -311,3 +358,18 @@ class RencanaViewModel extends ChangeNotifier {
     Navigator.pushNamed(context, '/pengaturan');
   }
 }
+
+String _emojiFor(String name) {
+  final value = name.toLowerCase();
+  if (value.contains('tomat')) return '🍅';
+  if (value.contains('cabai')) return '🌶️';
+  if (value.contains('jagung')) return '🌽';
+  if (value.contains('wortel')) return '🥕';
+  if (value.contains('bawang')) return '🧅';
+  if (value.contains('bayam') || value.contains('sawi')) return '🥬';
+  if (value.contains('kentang')) return '🥔';
+  return '🌾';
+}
+
+String _date(DateTime value) =>
+    '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';

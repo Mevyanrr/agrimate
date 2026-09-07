@@ -11,6 +11,10 @@ class SupplyForecast {
     this.latitude,
     this.longitude,
     this.status,
+    this.province,
+    this.city,
+    this.district,
+    this.farmerName,
   });
 
   final String? id;
@@ -24,4 +28,8 @@ class SupplyForecast {
   final double? latitude;
   final double? longitude;
   final String? status;
+  final String? province;
+  final String? city;
+  final String? district;
+  final String? farmerName;
 }

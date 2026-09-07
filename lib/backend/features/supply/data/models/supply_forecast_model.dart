@@ -13,6 +13,10 @@ class SupplyForecastModel extends SupplyForecast {
     super.latitude,
     super.longitude,
     super.status,
+    super.province,
+    super.city,
+    super.district,
+    super.farmerName,
   });
 
   factory SupplyForecastModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,10 @@ class SupplyForecastModel extends SupplyForecast {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       status: json['status'] as String?,
+      province: json['province'] as String?,
+      city: json['city'] as String?,
+      district: json['district'] as String?,
+      farmerName: json['_farmer_name'] as String?,
     );
   }
 
@@ -38,5 +46,8 @@ class SupplyForecastModel extends SupplyForecast {
     'address': address,
     'latitude': latitude,
     'longitude': longitude,
+    'province': province,
+    'city': city,
+    'district': district,
   };
 }

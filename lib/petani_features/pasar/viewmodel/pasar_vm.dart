@@ -2,6 +2,8 @@ import 'package:agrimate/backend/backend_dependencies.dart';
 import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/commodities/domain/entities/commodity.dart';
 import 'package:agrimate/backend/features/demand/domain/entities/demand_forecast.dart';
+import 'package:agrimate/backend/features/matches/domain/entities/market_match.dart';
+import 'package:agrimate/backend/features/supply/domain/entities/supply_forecast.dart';
 import 'package:flutter/material.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import '../model/pasar.dart';
@@ -26,6 +28,9 @@ class PasarViewModel extends ChangeNotifier {
   List<CommodityFilterModel> get commodityFilters => _commodityFilters;
 
   List<BuyerRequestModel> _allRequests = [];
+  final Map<String, String> _matchIdByForecastId = {};
+  final Map<String, double> _matchPriceByForecastId = {};
+  final Set<String> _confirmedForecastIds = {};
 
   String _selectedCommodityId = 'semua';
   String get selectedCommodityId => _selectedCommodityId;
@@ -43,16 +48,52 @@ class PasarViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final demandResult = await _backend.demandRepository.getMarketplace();
+      var demands = <DemandForecast>[];
+      var supplies = <SupplyForecast>[];
+      if (role == UserRole.petani) {
+        final result = await _backend.demandRepository.getMarketplace();
+        if (result case Failure(message: final message)) {
+          throw Exception(message);
+        }
+        demands = (result as Success<List<DemandForecast>>).data;
+      } else {
+        final result = await _backend.supplyRepository.getMarketplace();
+        if (result case Failure(message: final message)) {
+          throw Exception(message);
+        }
+        supplies = (result as Success<List<SupplyForecast>>).data;
+      }
       final commodityResult = await _backend.commodityRepository
           .getCommodities();
-      if (demandResult case Failure(message: final message))
+      final matchResult = await _backend.matches.getMine();
+      if (commodityResult case Failure(message: final message)) {
         throw Exception(message);
-      if (commodityResult case Failure(message: final message))
+      }
+      if (matchResult case Failure(message: final message)) {
         throw Exception(message);
-      final demands = (demandResult as Success<List<DemandForecast>>).data;
+      }
       final commodities = (commodityResult as Success<List<Commodity>>).data;
       final commodityById = {for (final item in commodities) item.id: item};
+
+      _matchIdByForecastId.clear();
+      _matchPriceByForecastId.clear();
+      _confirmedForecastIds.clear();
+      for (final match in (matchResult as Success<List<MarketMatch>>).data) {
+        final key = role == UserRole.petani ? 'demand_id' : 'supply_id';
+        final forecastId = match.data[key]?.toString();
+        final status = match.data['status']?.toString().toUpperCase();
+        if (forecastId != null && status != 'REJECTED') {
+          _matchIdByForecastId[forecastId] = match.id;
+          final price = _marketNumber(match.data['reference_price']);
+          if (price > 0) _matchPriceByForecastId[forecastId] = price;
+          final confirmedAt = role == UserRole.petani
+              ? match.data['farmer_confirmed_at']
+              : match.data['buyer_confirmed_at'];
+          if (confirmedAt != null || status == 'CONFIRMED') {
+            _confirmedForecastIds.add(forecastId);
+          }
+        }
+      }
 
       _commodityFilters = [
         const CommodityFilterModel(id: 'semua', label: 'Semua'),
@@ -60,27 +101,54 @@ class PasarViewModel extends ChangeNotifier {
           (item) => CommodityFilterModel(id: item.id, label: item.name),
         ),
       ];
-      _allRequests = demands.map((item) {
-        final commodity = commodityById[item.commodityId];
-        final name = commodity?.name ?? 'Komoditas';
-        return BuyerRequestModel(
-          id: item.id ?? '',
-          commodityId: item.commodityId,
-          commodityName: name,
-          commodityEmoji: _marketEmoji(name),
-          buyerType: BuyerType.distributor,
-          buyerName: 'Pembeli AgriMate',
-          location: item.deliveryAddress,
-          quantityKg: (item.remainingQuantity ?? item.quantity).toDouble(),
-          periodLabel:
-              '${_shortDate(item.neededStartDate)} - ${_shortDate(item.neededEndDate)}',
-          pricePerKg: commodity?.price ?? 0,
-          frequencyLabel: 'Sesuai kebutuhan',
-          description:
-              'Permintaan pasokan $name untuk ${item.deliveryAddress}.',
-          neededDate: item.neededStartDate,
-        );
-      }).toList();
+      if (role == UserRole.petani) {
+        _allRequests = demands.map((item) {
+          final commodity = commodityById[item.commodityId];
+          final name = commodity?.name ?? 'Komoditas';
+          return BuyerRequestModel(
+            id: item.id ?? '',
+            commodityId: item.commodityId,
+            commodityName: name,
+            commodityEmoji: _marketEmoji(name),
+            buyerType: BuyerType.distributor,
+            buyerName: _realName(item.buyerName),
+            location: item.deliveryAddress,
+            quantityKg: (item.remainingQuantity ?? item.quantity).toDouble(),
+            periodLabel:
+                '${_shortDate(item.neededStartDate)} - ${_shortDate(item.neededEndDate)}',
+            pricePerKg:
+                _matchPriceByForecastId[item.id] ?? commodity?.price ?? 0,
+            frequencyLabel: 'Sesuai kebutuhan',
+            description:
+                'Permintaan pasokan $name untuk ${item.deliveryAddress}.',
+            neededDate: item.neededStartDate,
+            isApplied: _confirmedForecastIds.contains(item.id),
+          );
+        }).toList();
+      } else {
+        _allRequests = supplies.map((item) {
+          final commodity = commodityById[item.commodityId];
+          final name = commodity?.name ?? 'Komoditas';
+          return BuyerRequestModel(
+            id: item.id ?? '',
+            commodityId: item.commodityId,
+            commodityName: name,
+            commodityEmoji: _marketEmoji(name),
+            buyerType: BuyerType.koperasi,
+            buyerName: _realName(item.farmerName),
+            location: item.address,
+            quantityKg: (item.remainingQuantity ?? item.quantity).toDouble(),
+            periodLabel:
+                '${_shortDate(item.harvestStartDate)} - ${_shortDate(item.harvestEndDate)}',
+            pricePerKg:
+                _matchPriceByForecastId[item.id] ?? commodity?.price ?? 0,
+            frequencyLabel: 'Sesuai ketersediaan',
+            description: 'Pasokan $name tersedia dari ${item.address}.',
+            neededDate: item.harvestStartDate,
+            isApplied: _confirmedForecastIds.contains(item.id),
+          );
+        }).toList();
+      }
 
       _state = PasarLoadState.loaded;
     } catch (e) {
@@ -153,13 +221,12 @@ class PasarViewModel extends ChangeNotifier {
     final index = _allRequests.indexWhere((r) => r.id == request.id);
     if (index == -1) return;
 
-    _allRequests[index] = _allRequests[index].copyWith(isApplied: true);
-    notifyListeners();
+    final matchId = _matchIdByForecastId[request.id];
+    if (matchId == null) return;
 
-    try {
-      await Future.delayed(const Duration(milliseconds: 400));
-    } catch (e) {
-      _allRequests[index] = _allRequests[index].copyWith(isApplied: false);
+    final result = await _backend.matches.confirm(matchId);
+    if (result is Success<void>) {
+      _allRequests[index] = _allRequests[index].copyWith(isApplied: true);
       notifyListeners();
     }
   }
@@ -225,7 +292,7 @@ class PasarViewModel extends ChangeNotifier {
         case 2:
           Navigator.pushReplacementNamed(
             context,
-            '/demand-prediction',
+            '/rencana-panen-pembeli',
             arguments: role,
           );
           break;
@@ -256,3 +323,12 @@ String _marketEmoji(String name) {
 
 String _shortDate(DateTime value) =>
     '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
+
+String _realName(String? value) {
+  final name = value?.trim();
+  return name == null || name.isEmpty ? 'Profil tidak tersedia' : name;
+}
+
+double _marketNumber(Object? value) => value is num
+    ? value.toDouble()
+    : double.tryParse(value?.toString() ?? '') ?? 0;

@@ -51,8 +51,8 @@ class _RencanaPanenBody extends StatelessWidget {
             ),
             _RencanaPanenHeader(
               accentColor: accentColor,
-  onAddTap: () => vm.onAddPlanPressed(context),
-
+              title: vm.isPetani ? 'Rencana Panen Saya' : 'Kebutuhan Saya',
+              onAddTap: () => vm.onAddPlanPressed(context),
             ),
             Expanded(child: _buildContent(context, vm, accentColor)),
           ],
@@ -67,9 +67,7 @@ class _RencanaPanenBody extends StatelessWidget {
     Color accentColor,
   ) {
     if (vm.state == RencanaPanenLoadState.loading) {
-      return Center(
-        child: CircularProgressIndicator(color: accentColor),
-      );
+      return Center(child: CircularProgressIndicator(color: accentColor));
     }
     if (vm.state == RencanaPanenLoadState.error) {
       return _ErrorState(
@@ -87,13 +85,14 @@ class _RencanaPanenBody extends StatelessWidget {
       child: plans.isEmpty
           ? _EmptyState(
               accentColor: accentColor,
+              isPetani: vm.isPetani,
               onCreatePlan: () => vm.onAddPlanPressed(context),
             )
           : ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
               itemCount: plans.length,
-              separatorBuilder: (_, __) => SizedBox(height: 12.h),
+              separatorBuilder: (_, _) => SizedBox(height: 12.h),
               itemBuilder: (context, index) {
                 final plan = plans[index];
                 return HarvestPlanCard(
@@ -108,10 +107,12 @@ class _RencanaPanenBody extends StatelessWidget {
 
 class _RencanaPanenHeader extends StatelessWidget {
   final Color accentColor;
+  final String title;
   final VoidCallback onAddTap;
 
   const _RencanaPanenHeader({
     required this.accentColor,
+    required this.title,
     required this.onAddTap,
   });
 
@@ -125,7 +126,7 @@ class _RencanaPanenHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Rencana Panen',
+            title,
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 17.sp,
@@ -153,11 +154,7 @@ class _RencanaPanenHeader extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 2.w),
-                    Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 22.sp,
-                    ),
+                    Icon(Icons.add_rounded, color: Colors.white, size: 22.sp),
                   ],
                 ),
               ),
@@ -171,10 +168,12 @@ class _RencanaPanenHeader extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final Color accentColor;
+  final bool isPetani;
   final VoidCallback onCreatePlan;
 
   const _EmptyState({
     required this.accentColor,
+    required this.isPetani,
     required this.onCreatePlan,
   });
 
@@ -199,7 +198,9 @@ class _EmptyState extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
                     Text(
-                      'Belum ada rencana panen',
+                      isPetani
+                          ? 'Belum ada rencana panen'
+                          : 'Belum ada kebutuhan',
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
@@ -208,7 +209,9 @@ class _EmptyState extends StatelessWidget {
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'Buat rencana panen pertamamu untuk mulai terhubung dengan pengguna lain.',
+                      isPetani
+                          ? 'Buat rencana panen pertamamu untuk mulai terhubung dengan pembeli.'
+                          : 'Buat kebutuhan pertamamu untuk mulai terhubung dengan petani.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12.5.sp,
@@ -230,7 +233,9 @@ class _EmptyState extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        '+ Buat Rencana Panen Baru',
+                        isPetani
+                            ? '+ Buat Rencana Panen Baru'
+                            : '+ Buat Kebutuhan Baru',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 13.5.sp,
@@ -279,9 +284,7 @@ class _ErrorState extends StatelessWidget {
           SizedBox(height: 12.h),
           ElevatedButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accentColor,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: accentColor),
             child: const Text(
               'Coba Lagi',
               style: TextStyle(color: Colors.white),

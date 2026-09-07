@@ -12,6 +12,10 @@ class DemandForecast {
     this.longitude,
     this.forecastSource = 'MANUAL',
     this.status,
+    this.province,
+    this.city,
+    this.district,
+    this.buyerName,
   });
   final String? id;
   final String? buyerId;
@@ -25,4 +29,8 @@ class DemandForecast {
   final double? longitude;
   final String forecastSource;
   final String? status;
+  final String? province;
+  final String? city;
+  final String? district;
+  final String? buyerName;
 }

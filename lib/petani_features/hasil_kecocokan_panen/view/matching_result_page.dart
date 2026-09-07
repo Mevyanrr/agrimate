@@ -106,14 +106,31 @@ class _MatchingResultBody extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 12.h),
-                      ...result.buyers.map(
-                        (buyer) => MatchingBuyerCard(
-                          buyer: buyer,
-                          role: role,
-                          isLoading: vm.isBuyerLoading(buyer.id),
-                          onRespond: (accept) => vm.respond(buyer.id, accept),
+                      if (result.buyers.isEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32.h),
+                          child: Center(
+                            child: Text(
+                              isPetani
+                                  ? 'Belum ada pembeli yang cocok.'
+                                  : 'Belum ada petani yang cocok.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ...result.buyers.map(
+                          (buyer) => MatchingBuyerCard(
+                            buyer: buyer,
+                            role: role,
+                            isLoading: vm.isBuyerLoading(buyer.id),
+                            onRespond: (accept) => vm.respond(buyer.id, accept),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   Positioned(
@@ -122,7 +139,14 @@ class _MatchingResultBody extends StatelessWidget {
                     bottom: 0,
                     child: MatchingBottomActions(
                       role: role,
-                      onLihatKebutuhan: () {},
+                      onLihatKebutuhan: () {
+                        Navigator.of(context).pushNamed(
+                          isPetani
+                              ? '/rencana-panen'
+                              : '/rencana-panen-pembeli',
+                          arguments: role,
+                        );
+                      },
                       onKembaliBeranda: () {
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       },

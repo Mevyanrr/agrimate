@@ -14,6 +14,10 @@ class DemandForecastModel extends DemandForecast {
     super.latitude,
     super.longitude,
     super.forecastSource,
+    super.province,
+    super.city,
+    super.district,
+    super.buyerName,
   });
 
   factory DemandForecastModel.fromJson(Map<String, dynamic> json) =>
@@ -30,6 +34,10 @@ class DemandForecastModel extends DemandForecast {
         longitude: (json['longitude'] as num?)?.toDouble(),
         forecastSource: json['forecast_source'] as String? ?? 'MANUAL',
         status: json['status'] as String?,
+        province: json['province'] as String?,
+        city: json['city'] as String?,
+        district: json['district'] as String?,
+        buyerName: json['_buyer_name'] as String?,
       );
 
   Map<String, dynamic> toEditableJson() => {
@@ -40,5 +48,8 @@ class DemandForecastModel extends DemandForecast {
     'latitude': latitude,
     'longitude': longitude,
     'forecast_source': forecastSource,
+    'province': province,
+    'city': city,
+    'district': district,
   };
 }

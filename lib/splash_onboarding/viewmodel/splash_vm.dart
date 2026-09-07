@@ -4,6 +4,7 @@ import 'package:agrimate/backend/backend_dependencies.dart';
 import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/profile/domain/entities/profile_entity.dart'
     as backend;
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -37,25 +38,66 @@ class SplashViewModel extends ChangeNotifier {
       return;
     }
 
+    // currentSession hanya membaca token cache perangkat. getUser memvalidasi
+    // token itu ke server sehingga akun Auth yang sudah dihapus bisa terdeteksi.
+    try {
+      final remoteUser = (await client.auth.getUser()).user;
+      if (remoteUser == null) {
+        if (!context.mounted) return;
+        await _clearDeletedSession(client, context);
+        return;
+      }
+    } on AuthException {
+      if (!context.mounted) return;
+      await _clearDeletedSession(client, context);
+      return;
+    }
+
     final profileResult = await BackendDependencies.create().profileRepository
         .getMine();
     if (!context.mounted) return;
 
     switch (profileResult) {
       case Success(data: final profile?):
-        final route = switch (profile.role) {
-          backend.UserRole.buyer => '/home-pembeli',
-          backend.UserRole.farmer when profile.fullName.trim().isNotEmpty =>
-            '/home-petani',
-          backend.UserRole.farmer => '/lengkapi-profil',
-        };
-        _replaceAll(context, route);
+        final incomplete =
+            profile.fullName.trim().isEmpty ||
+            (profile.address?.trim().isEmpty ?? true) ||
+            (profile.province?.trim().isEmpty ?? true);
+        if (incomplete) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/lengkapi-profil',
+            (route) => false,
+            arguments: {
+              'role': profile.role == backend.UserRole.buyer
+                  ? UserRole.pembeli
+                  : UserRole.petani,
+            },
+          );
+        } else {
+          _replaceAll(
+            context,
+            profile.role == backend.UserRole.buyer
+                ? '/home-pembeli'
+                : '/home-petani',
+          );
+        }
       case Success(data: null):
-        _replaceAll(context, _routeFromMetadata(client.auth.currentUser));
+        // Registrasi/OTP selalu membuat profile awal. Profile yang benar-benar
+        // hilang menandakan data akun sudah dihapus, bukan profile belum lengkap.
+        await _clearDeletedSession(client, context);
       case Failure():
         // Session lokal tetap dipakai saat profile sementara gagal dimuat.
         _replaceAll(context, _routeFromMetadata(client.auth.currentUser));
     }
+  }
+
+  Future<void> _clearDeletedSession(
+    SupabaseClient client,
+    BuildContext context,
+  ) async {
+    await client.auth.signOut(scope: SignOutScope.local);
+    if (context.mounted) _replaceAll(context, '/onboarding');
   }
 
   String _routeFromMetadata(User? user) {

@@ -5,6 +5,7 @@ import '../models/market_transaction_model.dart';
 abstract interface class TransactionRemoteDataSource {
   Future<List<MarketTransactionModel>> getMine();
   Future<MarketTransactionModel?> getByMatchId(String matchId);
+  Future<void> complete(String transactionId);
   Future<void> submitRating({
     required String transactionId,
     required int rating,
@@ -26,10 +27,41 @@ class SupabaseTransactionRemoteDataSource
       *,
       commodity:commodity_id (*),
       ratings:transaction_ratings (rating, reviewer_id)
-    ''')
+        ''')
         .order('created_at', ascending: false);
+    final counterpartyIds = rows
+        .map((row) {
+          final farmerId = row['farmer_id']?.toString();
+          final buyerId = row['buyer_id']?.toString();
+          return _userId == farmerId ? buyerId : farmerId;
+        })
+        .whereType<String>()
+        .toSet()
+        .toList();
+    final profileById = <String, Map<String, dynamic>>{};
+    if (counterpartyIds.isNotEmpty) {
+      final profiles = await _client
+          .from(DatabaseTables.profiles)
+          .select('id, full_name, phone, address')
+          .inFilter('id', counterpartyIds);
+      for (final profile in profiles) {
+        profileById[profile['id'].toString()] = Map<String, dynamic>.from(
+          profile,
+        );
+      }
+    }
     return rows.map((row) {
       final data = Map<String, dynamic>.from(row);
+      final farmerId = data['farmer_id']?.toString();
+      final buyerId = data['buyer_id']?.toString();
+      final counterpartyId = _userId == farmerId ? buyerId : farmerId;
+      final counterparty = profileById[counterpartyId];
+      final phone = counterparty?['phone']?.toString();
+      data['counterparty_label'] =
+          counterparty?['full_name']?.toString() ?? 'Profil tidak tersedia';
+      data['phone_number'] = phone;
+      data['whatsapp_number'] = phone;
+      data['delivery_address'] = counterparty?['address']?.toString();
       final ratings = data['ratings'];
       if (ratings is List) {
         for (final item in ratings) {
@@ -55,6 +87,12 @@ class SupabaseTransactionRemoteDataSource
         .maybeSingle();
     return row == null ? null : MarketTransactionModel.fromJson(row);
   }
+
+  @override
+  Future<void> complete(String transactionId) => _client.rpc(
+    'complete_transaction_after_contact',
+    params: {'p_transaction_id': transactionId},
+  );
 
   String get _userId =>
       _client.auth.currentUser?.id ??

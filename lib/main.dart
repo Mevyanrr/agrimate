@@ -2,7 +2,6 @@ import 'package:agrimate/auth/model/otp.dart';
 import 'package:agrimate/auth/view/daftar_akun.dart';
 import 'package:agrimate/auth/view/masuk.dart';
 import 'package:agrimate/auth/view/otp_verif.dart';
-import 'package:agrimate/ai/view/demand_prediction.dart';
 import 'package:agrimate/history/view/history.dart';
 import 'package:agrimate/notifications/view/notifications.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
@@ -104,7 +103,10 @@ class MyApp extends StatelessWidget {
               },
               '/notifications': (context) => const NotificationsView(),
               '/notifikasi': (context) => const NotificationsView(),
-              '/demand-prediction': (context) => const DemandPredictionView(),
+              // Alias sementara agar link lama tetap aman, tetapi memakai flow
+              // kebutuhan manual yang baru (tanpa prediksi AI).
+              '/demand-prediction': (context) =>
+                  const RencanaKebutuhanFlowPage(role: UserRole.pembeli),
               '/rencana-panen': (context) =>
                   const RencanaPanenView(role: UserRole.petani),
               '/rencana-panen-pembeli': (context) =>

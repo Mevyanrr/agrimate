@@ -23,7 +23,7 @@ class RencanaKebutuhanFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RencanaViewModel(role: role), 
+      create: (_) => RencanaViewModel(role: role),
       child: const _RencanaKebutuhanFlowBody(),
     );
   }
@@ -119,7 +119,7 @@ class _RencanaKebutuhanFlowBody extends StatelessWidget {
                           kuantitasKg: vm.kuantitas.toInt(),
                           tanggalMulai: vm.tanggalMulai!,
                           tanggalSelesai: vm.tanggalSelesai!,
-                          lokasiKirim: 'Menunggu konfirmasi petani',
+                          lokasiKirim: vm.submittedAddress ?? '-',
                         ),
                       ),
                     ),

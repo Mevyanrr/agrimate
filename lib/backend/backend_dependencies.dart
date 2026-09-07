@@ -24,6 +24,9 @@ import 'features/notifications/data/repositories/notification_repository_impl.da
 import 'features/notifications/domain/repositories/notification_repository.dart';
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
 import 'features/profile/data/repositories/profile_impl.dart';
+import 'features/profile/data/repositories/address_repository_impl.dart';
+import 'features/profile/data/services/address_ai_service.dart';
+import 'features/profile/domain/repositories/address_repository.dart';
 import 'features/profile/domain/repositories/profile_repository.dart';
 import 'features/supply/data/datasources/supply_remote_data_source.dart';
 import 'features/supply/data/repositories/supply_repository_impl.dart';
@@ -52,6 +55,7 @@ class BackendDependencies {
       profileRepository = ProfileRepositoryImpl(
         SupabaseProfileRemoteDataSource(client),
       ),
+      addressRepository = AddressRepositoryImpl(AddressAiService()),
       identityVerificationRepository = IdentityVerificationRepositoryImpl(
         SupabaseIdentityVerificationRemoteDataSource(client),
       ),
@@ -74,6 +78,7 @@ class BackendDependencies {
   final DemandRepository demandRepository;
   final DashboardRepository dashboardRepository;
   final ProfileRepository profileRepository;
+  final AddressRepository addressRepository;
   final IdentityVerificationRepository identityVerificationRepository;
   final MatchRepository matches;
   final TransactionRepository transactions;

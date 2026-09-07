@@ -151,18 +151,29 @@ class HomeViewModel extends ChangeNotifier {
                       (item.quantity.toDouble() - remaining).clamp(
                         0,
                         item.quantity.toDouble(),
-                      );
+                      ).toDouble();
                 })
-              : demands.fold<double>(0, (total, item) {
-                  final remaining =
-                      item.remainingQuantity?.toDouble() ??
-                      item.quantity.toDouble();
-                  return total +
-                      (item.quantity.toDouble() - remaining).clamp(
-                        0,
-                        item.quantity.toDouble(),
-                      );
-                }),
+              : (() {
+                  final totalNeeded = demands.fold<double>(
+                    0,
+                    (total, item) => total + item.quantity.toDouble(),
+                  );
+                  final totalFulfilled = demands.fold<double>(0, (total, item) {
+                    final remaining =
+                        item.remainingQuantity?.toDouble() ??
+                        item.quantity.toDouble();
+                    return total +
+                        (item.quantity.toDouble() - remaining).clamp(
+                          0,
+                          item.quantity.toDouble(),
+                        ).toDouble();
+                  });
+                  return totalNeeded == 0
+                      ? 0.0
+                      : (totalFulfilled / totalNeeded * 100)
+                          .clamp(0, 100)
+                          .toDouble();
+                })(),
           completedTransactions: summary.transactions,
         ),
         buyerMatch: BuyerMatchModel(matchCount: summary.potentialMatches),
@@ -232,7 +243,7 @@ class HomeViewModel extends ChangeNotifier {
       case 2:
         final targetMenu = (role == UserRole.petani)
             ? '/rencana-panen'
-            : '/demand-prediction';
+            : '/rencana-panen-pembeli';
         Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
@@ -253,21 +264,21 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void onBuyerMatchPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/kecocokan-pembeli');
+    Navigator.pushNamed(context, '/pasar', arguments: role);
   }
 
   void onCreatePlanPressed(BuildContext context) {
     Navigator.pushNamed(
       context,
-      isPetani ? '/tambah-rencana' : '/demand-prediction',
+      isPetani ? '/tambah-rencana' : '/rencana-kebutuhan-baru',
     );
   }
 
   void onSeeAllPlansPressed(BuildContext context) {
     Navigator.pushNamed(
       context,
-      isPetani ? '/rencana-panen' : '/history',
-      arguments: isPetani ? null : role,
+      isPetani ? '/rencana-panen' : '/rencana-panen-pembeli',
+      arguments: role,
     );
   }
 

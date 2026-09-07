@@ -1,12 +1,13 @@
 import 'package:agrimate/backend/backend_dependencies.dart';
 import 'package:agrimate/backend/core/result/result.dart';
 import 'package:agrimate/backend/features/supply/domain/entities/supply_forecast.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:agrimate/backend/features/demand/domain/entities/demand_forecast.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 
 abstract class RencanaRepository {
   Future<bool> saveDraft(Map<String, dynamic> data);
 
-  Future<bool> submitRencana(Map<String, dynamic> data);
+  Future<bool> submitRencana(Map<String, dynamic> data, UserRole role);
 }
 
 class RencanaRepositoryImpl implements RencanaRepository {
@@ -20,38 +21,43 @@ class RencanaRepositoryImpl implements RencanaRepository {
   }
 
   @override
-  Future<bool> submitRencana(Map<String, dynamic> data) async {
+  Future<bool> submitRencana(Map<String, dynamic> data, UserRole role) async {
     final start = DateTime.tryParse(data['tanggal_mulai']?.toString() ?? '');
     final end = DateTime.tryParse(data['tanggal_selesai']?.toString() ?? '');
     final commodityId = data['komoditas_id']?.toString();
     if (start == null || end == null || commodityId == null) {
-      throw StateError('Data rencana panen belum lengkap.');
+      throw StateError('Data forecast belum lengkap.');
     }
 
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) throw StateError('Sesi login tidak ditemukan.');
-    final details = await Supabase.instance.client
-        .from('farmer_details')
-        .select('land_address')
-        .eq('user_id', userId)
-        .maybeSingle();
-    final address = details?['land_address']?.toString().trim();
-    if (address == null || address.isEmpty) {
-      throw StateError('Alamat lahan belum tersimpan di profil.');
+    if (role == UserRole.petani) {
+      final result = await _backend.supplyRepository.create(
+        SupplyForecast(
+          commodityId: commodityId,
+          quantity: (data['kuantitas_kg'] as num?) ?? 0,
+          harvestStartDate: start,
+          harvestEndDate: end,
+          address: '',
+        ),
+      );
+      if (result case Failure(message: final message)) {
+        throw StateError(message);
+      }
+      return result is Success<SupplyForecast>;
     }
 
-    final result = await _backend.supplyRepository.create(
-      SupplyForecast(
+    final result = await _backend.demandRepository.create(
+      DemandForecast(
         commodityId: commodityId,
         quantity: (data['kuantitas_kg'] as num?) ?? 0,
-        harvestStartDate: start,
-        harvestEndDate: end,
-        address: address,
+        neededStartDate: start,
+        neededEndDate: end,
+        deliveryAddress: '',
+        forecastSource: 'MANUAL',
       ),
     );
     if (result case Failure(message: final message)) {
       throw StateError(message);
     }
-    return result is Success<SupplyForecast>;
+    return result is Success<DemandForecast>;
   }
 }

@@ -28,6 +28,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
     role: value.role,
     businessName: value.businessName,
     photoUrl: value.photoUrl,
+    address: value.address,
+    province: value.province,
+    city: value.city,
+    district: value.district,
+    phone: value.phone,
   );
 
   @override

@@ -60,9 +60,10 @@ class LoginViewModel extends ChangeNotifier {
         expectedRole: isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
       );
       if (!context.mounted) return;
-      final nextRoute = isPetani ? await _petaniNextRoute() : '/home-pembeli';
-      if (!context.mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
+      await _navigateAfterLogin(
+        context,
+        isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
+      );
     } on BackendException catch (error) {
       if (context.mounted) _showError(context, error.message);
     } finally {
@@ -108,11 +109,7 @@ class LoginViewModel extends ChangeNotifier {
         expectedRole: isPetani ? AuthUserRole.farmer : AuthUserRole.buyer,
       );
       if (!context.mounted) return;
-      final nextRoute = authenticatedRole == AuthUserRole.farmer
-          ? await _petaniNextRoute()
-          : '/home-pembeli';
-      if (!context.mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, nextRoute, (route) => false);
+      await _navigateAfterLogin(context, authenticatedRole);
     } on BackendException catch (error) {
       if (context.mounted) _showError(context, error.message);
     } finally {
@@ -127,16 +124,43 @@ class LoginViewModel extends ChangeNotifier {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<String> _petaniNextRoute() async {
+  Future<void> _navigateAfterLogin(
+    BuildContext context,
+    AuthUserRole authenticatedRole,
+  ) async {
     final result = await BackendDependencies.create().profileRepository
         .getMine();
-    if (result is Success<backend_profile.ProfileEntity?>) {
-      final profile = result.data;
-      if (profile != null && profile.fullName.trim().isNotEmpty) {
-        return '/home-petani';
-      }
+    if (!context.mounted) return;
+
+    final profile = result is Success<backend_profile.ProfileEntity?>
+        ? result.data
+        : null;
+    final profileIncomplete =
+        profile == null ||
+        profile.fullName.trim().isEmpty ||
+        (profile.address?.trim().isEmpty ?? true) ||
+        (profile.province?.trim().isEmpty ?? true);
+    final frontendRole = authenticatedRole == AuthUserRole.farmer
+        ? UserRole.petani
+        : UserRole.pembeli;
+
+    if (profileIncomplete) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/lengkapi-profil',
+        (route) => false,
+        arguments: {'role': frontendRole},
+      );
+      return;
     }
-    return '/lengkapi-profil';
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      authenticatedRole == AuthUserRole.farmer
+          ? '/home-petani'
+          : '/home-pembeli',
+      (route) => false,
+    );
   }
 
   void onForgotPasswordPressed(BuildContext context) {

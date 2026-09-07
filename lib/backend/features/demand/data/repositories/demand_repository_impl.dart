@@ -21,6 +21,10 @@ class DemandRepositoryImpl implements DemandRepository {
     forecastSource: value.forecastSource,
     deliveryAddress: value.deliveryAddress,
     status: value.status,
+    province: value.province,
+    city: value.city,
+    district: value.district,
+    buyerName: value.buyerName,
   );
 
   Future<Result<List<DemandForecast>>> _list(

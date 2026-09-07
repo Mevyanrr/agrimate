@@ -36,11 +36,46 @@ class SupabaseDemandRemoteDataSource implements DemandRemoteDataSource {
         .from(DatabaseTables.demandForecasts)
         .select()
         .order('needed_start_date');
-    return rows.map(DemandForecastModel.fromJson).toList();
+    final enriched = rows.map((row) => Map<String, dynamic>.from(row)).toList();
+    final ids = enriched
+        .map((row) => row['buyer_id']?.toString())
+        .whereType<String>()
+        .toSet()
+        .toList();
+    if (ids.isNotEmpty) {
+      try {
+        final profiles = await _client
+            .from(DatabaseTables.profiles)
+            .select('id, full_name')
+            .inFilter('id', ids);
+        final names = {
+          for (final profile in profiles)
+            profile['id'].toString(): profile['full_name']?.toString(),
+        };
+        for (final row in enriched) {
+          row['_buyer_name'] = names[row['buyer_id']?.toString()];
+        }
+      } catch (_) {
+        // Forecast tetap ditampilkan tanpa membuat nama pengganti palsu.
+      }
+    }
+    return enriched.map(DemandForecastModel.fromJson).toList();
   }
 
   @override
   Future<DemandForecastModel> create(DemandForecastModel demand) async {
+    final profile = await _client
+        .from(DatabaseTables.profiles)
+        .select('address, province, city, district, latitude, longitude')
+        .eq('id', _userId)
+        .single();
+    final province = profile['province']?.toString().trim();
+    if (province == null || province.isEmpty) {
+      throw const BackendException(
+        'Provinsi profil belum terverifikasi.',
+        code: 'province_required',
+      );
+    }
     final row = await _client
         .from(DatabaseTables.demandForecasts)
         .insert({
@@ -48,6 +83,12 @@ class SupabaseDemandRemoteDataSource implements DemandRemoteDataSource {
           'buyer_id': _userId,
           'commodity_id': demand.commodityId,
           'remaining_quantity': demand.quantity,
+          'delivery_address': profile['address'] ?? demand.deliveryAddress,
+          'province': province,
+          'city': profile['city'],
+          'district': profile['district'],
+          'latitude': profile['latitude'],
+          'longitude': profile['longitude'],
         })
         .select()
         .single();

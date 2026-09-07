@@ -27,6 +27,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
+  Future<Result<void>> complete(String transactionId) async {
+    try {
+      await _source.complete(transactionId);
+      return const Success<void>(null);
+    } catch (error) {
+      return Failure<void>('$error');
+    }
+  }
+
+  @override
   Future<Result<void>> submitRating({
     required String transactionId,
     required int rating,

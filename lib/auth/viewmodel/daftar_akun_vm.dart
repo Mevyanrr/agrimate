@@ -106,8 +106,9 @@ class RegisterViewModel extends ChangeNotifier {
       } else {
         Navigator.pushNamedAndRemoveUntil(
           context,
-          isPetani ? '/lengkapi-profil' : '/home-pembeli',
+          '/lengkapi-profil',
           (route) => false,
+          arguments: {'role': role},
         );
       }
     } on BackendException catch (error) {

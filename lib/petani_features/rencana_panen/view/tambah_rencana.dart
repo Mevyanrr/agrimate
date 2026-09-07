@@ -14,19 +14,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class RencanaFlowPage extends StatelessWidget {
-  final UserRole role; 
+  final UserRole role;
 
-  const RencanaFlowPage({
-    super.key,
-    required this.role,
-  });
+  const RencanaFlowPage({super.key, required this.role});
 
   static const routeName = '/rencana-baru';
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RencanaViewModel(role: role), 
+      create: (_) => RencanaViewModel(role: role),
       child: const _RencanaFlowBody(),
     );
   }
@@ -45,12 +42,12 @@ class _RencanaFlowBody extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-             HomeAppBar(
-  roleLabel: 'Petani',
-  accentColor: AppColors.greenprimary,
-  onNotificationTap: () => vm.onNotificationPressed(context),
-  onSettingsTap: () => vm.onSettingsPressed(context),
-),
+            HomeAppBar(
+              roleLabel: 'Petani',
+              accentColor: AppColors.greenprimary,
+              onNotificationTap: () => vm.onNotificationPressed(context),
+              onSettingsTap: () => vm.onSettingsPressed(context),
+            ),
             RencanaHeader(
               currentStep: vm.currentStep,
               onBack: () {
@@ -97,7 +94,7 @@ class _RencanaFlowBody extends StatelessWidget {
                           kuantitasKg: vm.kuantitas.toInt(),
                           tanggalMulai: vm.tanggalMulai!,
                           tanggalSelesai: vm.tanggalSelesai!,
-                          lokasiKirim: 'Gudang Brebes', //DUMMY
+                          lokasiKirim: vm.submittedAddress ?? '-',
                         ),
                       ),
                     ),

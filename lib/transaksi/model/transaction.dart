@@ -96,7 +96,11 @@ class TransactionModel {
     this.ratingGiven,
   });
 
-  TransactionModel copyWith({double? ratingGiven}) {
+  TransactionModel copyWith({
+    TransactionStatus? status,
+    double? ratingGiven,
+    String? deliveryDateLabel,
+  }) {
     return TransactionModel(
       id: id,
       commodityName: commodityName,
@@ -105,13 +109,13 @@ class TransactionModel {
       transactionDateLabel: transactionDateLabel,
       counterpartyLabel: counterpartyLabel,
       totalPrice: totalPrice,
-      status: status,
+      status: status ?? this.status,
       unitPrice: unitPrice,
       subtotal: subtotal,
       serviceFeePercent: serviceFeePercent,
       serviceFee: serviceFee,
       totalReceived: totalReceived,
-      deliveryDateLabel: deliveryDateLabel,
+      deliveryDateLabel: deliveryDateLabel ?? this.deliveryDateLabel,
       deliveryAddress: deliveryAddress,
       cancelDateLabel: cancelDateLabel,
       cancelReason: cancelReason,
@@ -131,7 +135,11 @@ class TransactionModel {
       'matched_quantity',
       'quantity',
     ]);
-    final unitPrice = _number(json, const ['unit_price', 'price_per_kg']);
+    final unitPrice = _number(json, const [
+      'unit_price',
+      'price_per_kg',
+      'reference_price',
+    ]);
     final subtotal = _number(json, const [
       'subtotal',
     ], fallback: quantity * unitPrice);
@@ -139,7 +147,7 @@ class TransactionModel {
       'total_price',
       'total_amount',
     ], fallback: subtotal);
-    final serviceFee = _number(json, const ['service_fee']);
+    final serviceFee = _number(json, const ['service_fee', 'fee_amount']);
 
     return TransactionModel(
       id: json['id']?.toString() ?? '',
@@ -159,7 +167,10 @@ class TransactionModel {
       status: _transactionStatus(json['status']),
       unitPrice: unitPrice,
       subtotal: subtotal,
-      serviceFeePercent: (json['service_fee_percent'] as num?)?.toDouble() ?? 5,
+      serviceFeePercent:
+          (json['service_fee_percent'] as num?)?.toDouble() ??
+          (json['fee_percentage'] as num?)?.toDouble() ??
+          5,
       serviceFee: serviceFee,
       totalReceived: _number(json, const [
         'total_received',

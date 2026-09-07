@@ -58,19 +58,7 @@ class TransactionListViewModel extends ChangeNotifier {
           throw Exception(message);
       }
 
-      _summary = TransactionSummaryModel(
-        totalTransactions: _allTransactions.length,
-        completedCount: _allTransactions
-            .where((item) => item.status == TransactionStatus.done)
-            .length,
-        waitingCount: _allTransactions
-            .where((item) => item.status == TransactionStatus.waiting)
-            .length,
-        totalValue: _allTransactions.fold(
-          0,
-          (total, item) => total + item.totalPrice,
-        ),
-      );
+      _recalculateSummary();
 
       _errorMessage = null;
       _state = TransactionLoadState.loaded;
@@ -79,6 +67,20 @@ class TransactionListViewModel extends ChangeNotifier {
       _state = TransactionLoadState.error;
     }
     notifyListeners();
+  }
+
+  void _recalculateSummary() {
+    final completed = _allTransactions
+        .where((item) => item.status == TransactionStatus.done)
+        .toList();
+    _summary = TransactionSummaryModel(
+      totalTransactions: _allTransactions.length,
+      completedCount: completed.length,
+      waitingCount: _allTransactions
+          .where((item) => item.status == TransactionStatus.waiting)
+          .length,
+      totalValue: completed.fold(0, (total, item) => total + item.totalPrice),
+    );
   }
 
   Future<void> onRefresh() => fetchTransactions();
@@ -115,6 +117,7 @@ class TransactionListViewModel extends ChangeNotifier {
         final index = _allTransactions.indexWhere((t) => t.id == result.id);
         if (index != -1) {
           _allTransactions[index] = result;
+          _recalculateSummary();
           notifyListeners();
         }
       }

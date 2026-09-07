@@ -71,8 +71,9 @@ class LengkapiProfilViewModel extends ChangeNotifier {
 
   String? get whatsappError {
     final v = whatsappController.text.trim();
-    if (v.isEmpty)
+    if (v.isEmpty) {
       return _submitAttempted ? 'Nomor WhatsApp wajib diisi' : null;
+    }
     if (!_phoneRegex.hasMatch(v)) {
       return 'Format nomor tidak valid, contoh: 08512345678';
     }
@@ -175,10 +176,33 @@ class LengkapiProfilViewModel extends ChangeNotifier {
         throw Exception(message);
       }
 
+      final addressResult = await _backend.addressRepository.normalize(
+        payload.alamatLahan,
+      );
+      if (addressResult case Failure(message: final message)) {
+        throw Exception(message);
+      }
+      final normalizedAddress = switch (addressResult) {
+        Success(data: final address) => address,
+        Failure() => throw Exception('Gagal memeriksa alamat.'),
+      };
+      if (normalizedAddress.needsConfirmation ||
+          normalizedAddress.province == null) {
+        throw Exception(
+          normalizedAddress.reason ??
+              'Alamat belum cukup spesifik. Lengkapi hingga kecamatan, kota/kabupaten, dan provinsi.',
+        );
+      }
+
       final profile = backend.ProfileEntity(
         id: userId,
         fullName: payload.namaLengkap,
         role: isPembeli ? backend.UserRole.buyer : backend.UserRole.farmer,
+        address: normalizedAddress.original,
+        province: normalizedAddress.province,
+        city: normalizedAddress.city,
+        district: normalizedAddress.district,
+        phone: payload.nomorWhatsapp,
       );
       if (existing is! Success<backend.ProfileEntity?>) {
         throw Exception('Gagal membaca profil.');
@@ -243,8 +267,21 @@ class LengkapiProfilViewModel extends ChangeNotifier {
         );
       }
     } catch (e) {
+      final message = e.toString();
+      if (message.contains('23503') || message.contains('profiles_id_fkey')) {
+        await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
+        if (context.mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/register',
+            (route) => false,
+            arguments: role,
+          );
+        }
+        return;
+      }
       _submitState = SubmitState.error;
-      _submitError = e.toString().replaceFirst('Exception: ', '');
+      _submitError = message.replaceFirst('Exception: ', '');
       notifyListeners();
     }
   }
