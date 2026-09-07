@@ -68,20 +68,25 @@ void onNavTap(BuildContext context, int index) {
     _currentNavIndex = index;
     notifyListeners();
 
+    if (!context.mounted) return;
+
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home-petani');
+        final targetHome = isPetani ? '/home-petani' : '/home-pembeli';
+        Navigator.pushReplacementNamed(context, targetHome, arguments: role);
+        break;
       case 1:
-        Navigator.pushNamed(context, '/pasar');
+        Navigator.pushReplacementNamed(context, '/pasar', arguments: role);
         break;
       case 2:
-        Navigator.pushNamed(context, '/rencana-panen');
+        final targetMenu = isPetani ? '/rencana-panen' : '/permintaan-saya';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
-        Navigator.pushNamed(context, '/transaksi');
+        final targetTransaksi = isPetani ? '/transaksi' : '/transaksi-pembeli';
+        Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
         break;
       case 4:
-        Navigator.pushNamed(context, '/profil');
         break;
     }
   }

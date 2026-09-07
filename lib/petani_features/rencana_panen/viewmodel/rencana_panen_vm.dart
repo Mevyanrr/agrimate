@@ -1,11 +1,14 @@
 import 'package:agrimate/petani_features/home/data/rencana_panen.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
 import 'package:agrimate/petani_features/rencana_panen/model/rencana_panen.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 
 enum RencanaPanenLoadState { loading, loaded, error }
 
 class RencanaPanenViewModel extends ChangeNotifier {
+  final UserRole role;
+
   RencanaPanenLoadState _state = RencanaPanenLoadState.loading;
   RencanaPanenLoadState get state => _state;
 
@@ -18,7 +21,9 @@ class RencanaPanenViewModel extends ChangeNotifier {
   int _currentNavIndex = 2;
   int get currentNavIndex => _currentNavIndex;
 
-  RencanaPanenViewModel() {
+  bool get isPetani => role == UserRole.petani;
+
+  RencanaPanenViewModel({required this.role}) {
     fetchRencanaData();
   }
 
@@ -88,31 +93,43 @@ class RencanaPanenViewModel extends ChangeNotifier {
 
   Future<void> onRefresh() => fetchRencanaData();
 
- void onNavTap(BuildContext context, int index) {
+  void onNavTap(BuildContext context, int index) {
     if (index == _currentNavIndex) return;
     _currentNavIndex = index;
     notifyListeners();
 
+    if (!context.mounted) return;
+
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home-petani');
+        final targetHome = isPetani ? '/home-petani' : '/home-pembeli';
+        Navigator.pushReplacementNamed(context, targetHome, arguments: role);
+        break;
       case 1:
-        Navigator.pushNamed(context, '/pasar');
+        Navigator.pushReplacementNamed(context, '/pasar', arguments: role);
         break;
       case 2:
-        Navigator.pushNamed(context, '/rencana-panen');
+        final targetMenu = isPetani ? '/rencana-panen' : '/rencana-panen-pembeli';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
-        Navigator.pushNamed(context, '/transaksi');
+        final targetTransaksi = isPetani ? '/transaksi' : '/transaksi-pembeli';
+        Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
         break;
       case 4:
-        Navigator.pushNamed(context, '/profil');
+        final targetProfil = isPetani ? '/profil' : '/profil-pembeli';
+        Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
         break;
     }
   }
 
+  // Arahkan ke rute yang sesuai berdasarkan role pengguna
   void onAddPlanPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/rencana-panen');
+    if (isPetani) {
+      Navigator.pushNamed(context, '/tambah-rencana');
+    } else {
+      Navigator.pushNamed(context, '/rencana-kebutuhan-baru');
+    }
   }
 
   void onNotificationPressed(BuildContext context) {
@@ -129,10 +146,11 @@ class RencanaPanenViewModel extends ChangeNotifier {
 }
 
 class RencanaViewModel extends ChangeNotifier {
-  RencanaViewModel({RencanaRepository? repository})
+  RencanaViewModel({RencanaRepository? repository, required this.role})
       : _repository = repository ?? RencanaRepositoryImpl();
 
   final RencanaRepository _repository;
+  final UserRole role;
 
   final PageController pageController = PageController();
   static const int totalSteps = 4;
@@ -164,7 +182,7 @@ class RencanaViewModel extends ChangeNotifier {
 
   bool get isPage2Valid => _kuantitasInteracted && kuantitas > 0;
 
-//PAGE 3 — Pilih Tanggal Panen
+  // PAGE 3 — Pilih Tanggal Panen
   DateTime calendarMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? tanggalMulai;
   DateTime? tanggalSelesai;
@@ -191,7 +209,7 @@ class RencanaViewModel extends ChangeNotifier {
     } else if (date.isBefore(tanggalMulai!)) {
       tanggalMulai = date;
     } else if (date.isAtSameMomentAs(tanggalMulai!)) {
-
+      // Do nothing
     } else {
       tanggalSelesai = date;
       _repository.saveDraft({
@@ -273,16 +291,16 @@ class RencanaViewModel extends ChangeNotifier {
   }
 
   void onNotificationPressed(BuildContext context) {
-  Navigator.pushNamed(
-    context,
-    '/notifikasi',
-  );
-}
+    Navigator.pushNamed(
+      context,
+      '/notifikasi',
+    );
+  }
 
-void onSettingsPressed(BuildContext context) {
-  Navigator.pushNamed(
-    context,
-    '/pengaturan',
-  );
-}
+  void onSettingsPressed(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      '/pengaturan',
+    );
+  }
 }

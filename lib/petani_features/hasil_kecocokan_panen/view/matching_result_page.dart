@@ -5,13 +5,20 @@ import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/back_butto
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/matching_bottom_actions.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/matching_buyer_card.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/matching_summary_header_card.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class MatchingResultPage extends StatelessWidget {
   final MatchingResultModel result;
-  const MatchingResultPage({super.key, required this.result});
+  final UserRole role;
+
+  const MatchingResultPage({
+    super.key,
+    required this.result,
+    required this.role,
+  });
 
   static const routeName = '/hasil-kecocokan';
 
@@ -19,18 +26,21 @@ class MatchingResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => MatchingResultViewModel(result: result),
-      child: const _MatchingResultBody(),
+      child: _MatchingResultBody(role: role), 
     );
   }
 }
 
 class _MatchingResultBody extends StatelessWidget {
-  const _MatchingResultBody();
+  final UserRole role; 
+
+  const _MatchingResultBody({required this.role});
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<MatchingResultViewModel>();
     final result = vm.result;
+    final isPetani = role == UserRole.petani;
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
@@ -47,7 +57,9 @@ class _MatchingResultBody extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  KembaliPillButton(onTap: () => Navigator.of(context).maybePop()),
+                  KembaliPillButton(
+                    onTap: () => Navigator.of(context).maybePop(),
+                  ),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
@@ -81,12 +93,12 @@ class _MatchingResultBody extends StatelessWidget {
               child: Stack(
                 children: [
                   ListView(
-                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 160.h), 
+                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 160.h),
                     children: [
                       MatchingSummaryHeaderCard(result: result),
                       SizedBox(height: 20.h),
                       Text(
-                        'Pembeli yang Cocok',
+                        isPetani ? 'Pembeli yang Cocok' : 'Petani yang Cocok',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -97,6 +109,7 @@ class _MatchingResultBody extends StatelessWidget {
                       ...result.buyers.map(
                         (buyer) => MatchingBuyerCard(
                           buyer: buyer,
+                          role: role,
                           isLoading: vm.isBuyerLoading(buyer.id),
                           onRespond: (accept) => vm.respond(buyer.id, accept),
                         ),
@@ -108,14 +121,8 @@ class _MatchingResultBody extends StatelessWidget {
                     right: 0,
                     bottom: 0,
                     child: MatchingBottomActions(
-                      onLihatKebutuhan: () {
-                        
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (_) => MatchingSearchPage(rencana: result.rencana),
-                        //   ),
-                        // );
-                      },
+                      role: role,
+                      onLihatKebutuhan: () {},
                       onKembaliBeranda: () {
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       },

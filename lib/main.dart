@@ -7,6 +7,7 @@ import 'package:agrimate/petani_features/lengkapi_profil/view/lengkapi_profil.da
 import 'package:agrimate/petani_features/pasar/view/pasar.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/rencana_panen.dart';
 import 'package:agrimate/petani_features/rencana_panen/view/tambah_rencana.dart';
+import 'package:agrimate/petani_features/widget/rencana_flow.dart';
 import 'package:agrimate/profil/view/profil.dart';
 import 'package:agrimate/role_selection/model/role.dart';
 import 'package:agrimate/role_selection/view/role.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
             title: 'MyApp',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(useMaterial3: true),
-            initialRoute: '/splash1',
+            initialRoute: '/role-selection',
             routes: {
               '/splash1': (context) => const SplashPage1(),
               '/splash2': (context) => const SplashPage2(),
@@ -85,8 +86,14 @@ class MyApp extends StatelessWidget {
                   const HomeView(role: UserRole.petani),
               '/home-pembeli': (context) =>
                   const HomeView(role: UserRole.pembeli),
-              '/rencana-panen': (context) => const RencanaPanenView(),
-              '/tambah-rencana': (context) => const RencanaFlowPage(),
+              '/rencana-panen': (context) =>
+                  const RencanaPanenView(role: UserRole.petani),
+              '/rencana-panen-pembeli': (context) =>
+                  const RencanaPanenView(role: UserRole.pembeli),
+              '/tambah-rencana': (context) =>
+                  const RencanaFlowPage(role: UserRole.petani),
+              '/rencana-kebutuhan-baru': (context) =>
+                  const RencanaKebutuhanFlowPage(role: UserRole.pembeli),
               '/pasar': (context) {
                 final role =
                     ModalRoute.of(context)?.settings.arguments as UserRole? ??
@@ -108,12 +115,26 @@ class MyApp extends StatelessWidget {
                     UserRole.petani;
                 return ProfileView(role: role);
               },
+              '/profil-pembeli': (context) {
+                final role =
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.pembeli;
+                return ProfileView(role: role);
+              },
+
               '/transaksi': (context) {
                 final role =
-                    ModalRoute.of(context)!.settings.arguments as UserRole? ??
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
                     UserRole.petani;
                 return TransactionListView(role: role);
               },
+              '/transaksi-pembeli': (context) {
+                final role =
+                    ModalRoute.of(context)?.settings.arguments as UserRole? ??
+                    UserRole.pembeli;
+                return TransactionListView(role: role);
+              },
+
               '/transaction-detail': (context) {
                 final args =
                     ModalRoute.of(context)!.settings.arguments

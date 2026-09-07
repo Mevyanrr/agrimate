@@ -52,10 +52,9 @@ class KomoditasData {
   ];
 }
 
-/// Representasi 1 "Rencana Panen" hasil dari flow 4 halaman.
 class RencanaModel {
   final KomoditasModel? komoditas;
-  final int kuantitas; // dalam kg
+  final int kuantitas;
   final DateTime? tanggalMulai;
   final DateTime? tanggalSelesai;
 
@@ -66,7 +65,6 @@ class RencanaModel {
     this.tanggalSelesai,
   });
 
-  /// Estimasi durasi panen dalam hari (selisih tanggal selesai - mulai).
   int get durasiHari {
     if (tanggalMulai == null || tanggalSelesai == null) return 0;
     return tanggalSelesai!.difference(tanggalMulai!).inDays;
@@ -86,7 +84,6 @@ class RencanaModel {
     );
   }
 
-  /// Payload siap kirim ke backend.
   Map<String, dynamic> toJson() => {
         'komoditas_id': komoditas?.id,
         'komoditas_name': komoditas?.name,

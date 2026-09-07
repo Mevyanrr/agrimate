@@ -32,7 +32,11 @@ class _TransactionListBody extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
-      bottomNavigationBar: AppBottomNav(currentIndex: 3, accentColor: accentColor, onTap: (_) {}),
+      bottomNavigationBar: AppBottomNav(
+  currentIndex: 3, 
+  accentColor: accentColor, 
+  onTap: (index) => vm.onNavTap(context, index),
+),
       body: SafeArea(
         bottom: false,
         child: Column(

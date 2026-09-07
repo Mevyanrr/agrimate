@@ -55,14 +55,14 @@ class HomeViewModel extends ChangeNotifier {
       await Future.delayed(const Duration(milliseconds: 600));
 
       _data = HomeDataModel(
-        profile: const FarmerProfileModel(
+        profile: FarmerProfileModel(
           photoUrl: null,
-          name: 'Pak Tian',
+          name: isPetani ? 'Pak Tian' : 'Budi Pembeli',
           location: 'Malang, Jawa Timur',
         ),
         summary: HomeSummaryModel(
           activePlans: 5,
-          totalAllocatedKg: isPetani ? 850 : 70, // format persen jika pembeli
+          totalAllocatedKg: isPetani ? 850 : 70,
           completedTransactions: isPetani ? 12 : 8,
         ),
         buyerMatch: const BuyerMatchModel(matchCount: 1),
@@ -98,59 +98,63 @@ class HomeViewModel extends ChangeNotifier {
 
   Future<void> onRefresh() => fetchHomeData();
 
-  void onNavTap(BuildContext context, int index) {
-  if (index == _currentNavIndex) return;
-  _currentNavIndex = index;
-  notifyListeners();
-
-  switch (index) {
-    case 0:
-      final targetHome = (role == UserRole.petani) ? '/home-petani' : '/home-pembeli';
-      Navigator.pushReplacementNamed(context, targetHome, arguments: role); 
-      break;
-    case 1:
-      Navigator.pushReplacementNamed(
-        context, 
-        '/pasar', 
-        arguments: role,
-      );
-      break;
-    case 2:
-      final targetMenu = (role == UserRole.petani) ? '/rencana-panen' : '/permintaan-saya';
-      Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
-      break;
-    case 3:
-      final targetTransaksi = (role == UserRole.petani) ? '/transaksi' : '/transaksi-pembeli';
-      Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
-      break;
-    case 4:
-      final targetProfil = (role == UserRole.petani) ? '/profil' : '/profil-pembeli';
-      Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
-      break;
+    void onNavTap(BuildContext context, int index) {
+    if (index == _currentNavIndex) return;
+    _currentNavIndex = index;
+    notifyListeners();
+ 
+    if (!context.mounted) return;
+ 
+    switch (index) {
+      case 0:
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(
+          context,
+          '/pasar',
+          arguments: role,
+        );
+        break;
+      case 2:
+        final targetMenu = isPetani ? '/rencana-panen' : '/rencana-panen-pembeli';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
+        break;
+      case 3:
+        final targetTransaksi = isPetani ? '/transaksi' : '/transaksi-pembeli';
+        Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
+        break;
+      case 4:
+        final targetProfil = isPetani ? '/profil' : '/profil-pembeli';
+        Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
+        break;
+    }
   }
-}
 
   void onNotificationPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/notifikasi');
+    Navigator.pushNamed(context, '/notifikasi', arguments: role);
   }
 
   void onSettingsPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/pengaturan');
+    Navigator.pushNamed(context, '/pengaturan', arguments: role);
   }
 
   void onBuyerMatchPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/kecocokan-pembeli');
+    final targetMatch = isPetani ? '/kecocokan-pembeli' : '/kecocokan-petani';
+    Navigator.pushNamed(context, targetMatch, arguments: role);
   }
 
   void onCreatePlanPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/rencana-panen/buat');
+    final targetCreate = isPetani ? '/rencana-panen/buat' : '/permintaan-saya/buat';
+    Navigator.pushNamed(context, targetCreate, arguments: role);
   }
 
   void onSeeAllPlansPressed(BuildContext context) {
-    Navigator.pushNamed(context, '/rencana-panen');
+    final targetList = isPetani ? '/rencana-panen' : '/permintaan-saya';
+    Navigator.pushNamed(context, targetList, arguments: role);
   }
 
   void onPlanCardPressed(BuildContext context, HarvestPlanModel plan) {
-    Navigator.pushNamed(context, '/rencana-panen/detail', arguments: plan.id);
+    final targetDetail = isPetani ? '/rencana-panen/detail' : '/permintaan-saya/detail';
+    Navigator.pushNamed(context, targetDetail, arguments: plan.id);
   }
 }

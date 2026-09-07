@@ -6,6 +6,7 @@ enum TransactionLoadState { loading, loaded, error }
 
 class TransactionListViewModel extends ChangeNotifier {
   final UserRole role;
+  int _currentNavIndex = 3;
 
   TransactionListViewModel({required this.role}) {
     fetchTransactions();
@@ -151,4 +152,37 @@ class TransactionListViewModel extends ChangeNotifier {
       }
     });
   }
+
+  
+  void onNavTap(BuildContext context, int index) {
+  if (index == _currentNavIndex) return;
+  _currentNavIndex = index;
+  notifyListeners();
+
+  switch (index) {
+    case 0:
+      final targetHome = (role == UserRole.petani) ? '/home-petani' : '/home-pembeli';
+      Navigator.pushReplacementNamed(context, targetHome, arguments: role); 
+      break;
+    case 1:
+      Navigator.pushReplacementNamed(
+        context, 
+        '/pasar', 
+        arguments: role,
+      );
+      break;
+    case 2:
+      final targetMenu = (role == UserRole.petani) ? '/rencana-panen' : '/permintaan-saya';
+      Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
+      break;
+    case 3:
+      final targetTransaksi = (role == UserRole.petani) ? '/transaksi' : '/transaksi-pembeli';
+      Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
+      break;
+    case 4:
+      final targetProfil = (role == UserRole.petani) ? '/profil' : '/profil-pembeli';
+      Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
+      break;
+  }
+}
 }

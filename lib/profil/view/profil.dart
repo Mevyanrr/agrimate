@@ -39,124 +39,130 @@ class _ProfileBody extends StatelessWidget {
       backgroundColor: AppColors.scaffoldGrey,
       bottomNavigationBar: AppBottomNav(
         currentIndex: vm.currentNavIndex,
-        accentColor: AppColors.greenprimary,
+        accentColor: accentColor, // Disesuaikan dengan accentColor role
         onTap: (index) => vm.onNavTap(context, index),
       ),
       body: SafeArea(
         bottom: false,
         child: vm.state == ProfileLoadState.loading
             ? Center(child: CircularProgressIndicator(color: accentColor))
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    HomeAppBar(
-                      roleLabel: vm.isPetani ? 'Petani' : 'Pembeli',
-                      accentColor: accentColor,
-                      onNotificationTap: () =>
-                          Navigator.pushNamed(context, '/notifikasi'),
-                      onSettingsTap: () =>
-                          Navigator.pushNamed(context, '/pengaturan'),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Profil Saya',
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 16.h),
-
-                          _ProfileCard(
-                            profile: vm.profile!,
-                            accentColor: accentColor,
-                            onEditPressed: () =>
-                                vm.onEditProfilePressed(context),
-                          ),
-
-                          Padding(
-                            padding: EdgeInsets.only(top: 12.h),
-                            child: _MenuTile(
-                              item: vm.menuItems.first,
-                              accentLight: accentLight,
-                              onTap: () => vm.onMenuItemPressed(
-                                context,
-                                vm.menuItems.first,
+            : vm.profile == null
+                ? const Center(child: Text('Gagal memuat profil'))
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        HomeAppBar(
+                          roleLabel: vm.isPetani ? 'Petani' : 'Pembeli',
+                          accentColor: accentColor,
+                          onNotificationTap: () =>
+                              Navigator.pushNamed(context, '/notifikasi'),
+                          onSettingsTap: () =>
+                              Navigator.pushNamed(context, '/pengaturan'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Profil Saya',
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
-                              isCardStyle: true,
-                            ),
-                          ),
-                          SizedBox(height: 20.h),
+                              SizedBox(height: 16.h),
 
-                          ...vm.menuItems.skip(1).map((item) {
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: 12.h),
-                              child: _MenuTile(
-                                item: item,
-                                accentLight: accentLight,
-                                onTap: () =>
-                                    vm.onMenuItemPressed(context, item),
+                              _ProfileCard(
+                                profile: vm.profile!,
+                                accentColor: accentColor,
+                                onEditPressed: () =>
+                                    vm.onEditProfilePressed(context),
                               ),
-                            );
-                          }),
-                          SizedBox(height: 12.h),
 
-                          // Tombol Keluar
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52.h,
-                            child: OutlinedButton(
-                              onPressed: vm.isLoggingOut
-                                  ? null
-                                  : () async {
-                                      final confirmed =
-                                          await showLogoutConfirmSheet(
+                              // Render Menu Utama jika menuItems tidak kosong
+                              if (vm.menuItems.isNotEmpty) ...[
+                                Padding(
+                                  padding: EdgeInsets.only(top: 12.h),
+                                  child: _MenuTile(
+                                    item: vm.menuItems.first,
+                                    accentLight: accentLight,
+                                    onTap: () => vm.onMenuItemPressed(
+                                      context,
+                                      vm.menuItems.first,
+                                    ),
+                                    isCardStyle: true,
+                                  ),
+                                ),
+                                SizedBox(height: 20.h),
+
+                                ...vm.menuItems.skip(1).map((item) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: 12.h),
+                                    child: _MenuTile(
+                                      item: item,
+                                      accentLight: accentLight,
+                                      onTap: () =>
+                                          vm.onMenuItemPressed(context, item),
+                                    ),
+                                  );
+                                }),
+                              ],
+
+                              SizedBox(height: 12.h),
+
+                              // Tombol Keluar
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52.h,
+                                child: OutlinedButton(
+                                  onPressed: vm.isLoggingOut
+                                      ? null
+                                      : () async {
+                                          final confirmed =
+                                              await showLogoutConfirmSheet(
                                             context,
                                             accentColor: accentColor,
                                           );
-                                      if (confirmed == true &&
-                                          context.mounted) {
-                                        await vm.onConfirmLogout(context);
-                                      }
-                                    },
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Colors.red),
-                                backgroundColor: const Color(0xFFFDECEC),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.r),
+                                          if (confirmed == true &&
+                                              context.mounted) {
+                                            await vm.onConfirmLogout(context);
+                                          }
+                                        },
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.red),
+                                    backgroundColor: const Color(0xFFFDECEC),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16.r),
+                                    ),
+                                  ),
+                                  child: vm.isLoggingOut
+                                      ? SizedBox(
+                                          width: 20.w,
+                                          height: 20.w,
+                                          child: const CircularProgressIndicator(
+                                            color: Colors.red,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Keluar dari Akun',
+                                          style: TextStyle(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.red,
+                                          ),
+                                        ),
                                 ),
                               ),
-                              child: vm.isLoggingOut
-                                  ? SizedBox(
-                                      width: 20.w,
-                                      height: 20.w,
-                                      child: const CircularProgressIndicator(
-                                        color: Colors.red,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Keluar dari Akun',
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
       ),
     );
   }
@@ -278,15 +284,14 @@ class _ProfileCard extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20.r),
                     ),
-                    child:
-                        Text(
-                          'Terverifikasi',
-                          style: TextStyle(
-                            color: AppColors.greenprimary,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    child: Text(
+                      'Terverifikasi',
+                      style: TextStyle(
+                        color: AppColors.greenprimary,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
               ],
             ),

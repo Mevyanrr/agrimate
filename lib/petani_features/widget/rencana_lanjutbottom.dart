@@ -2,12 +2,12 @@ import 'package:agrimate/core/appcolor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 class RencanaBottomButton extends StatelessWidget {
   final String label;
   final bool enabled;
   final bool isLoading;
   final VoidCallback onPressed;
+  final Color accentColor;
 
   const RencanaBottomButton({
     super.key,
@@ -15,6 +15,7 @@ class RencanaBottomButton extends StatelessWidget {
     required this.enabled,
     required this.onPressed,
     this.isLoading = false,
+    this.accentColor = AppColors.greenprimary,
   });
 
   @override
@@ -32,7 +33,7 @@ class RencanaBottomButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: enabled && !isLoading ? onPressed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.greenprimary,
+            backgroundColor: accentColor,
             disabledBackgroundColor: AppColors.indicatorInactive,
             foregroundColor: Colors.white,
             disabledForegroundColor: AppColors.textMuted,

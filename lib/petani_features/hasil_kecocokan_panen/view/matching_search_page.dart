@@ -5,20 +5,30 @@ import 'package:agrimate/petani_features/hasil_kecocokan_panen/viewmodel/matchin
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/back_button.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/matching_mini_summary_card.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/widget/pulsing_rings.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class MatchingSearchPage extends StatelessWidget {
+  final UserRole role;
   final RencanaSummaryModel rencana;
-  const MatchingSearchPage({super.key, required this.rencana});
+
+  const MatchingSearchPage({
+    super.key,
+    required this.role,
+    required this.rencana,
+  });
 
   static const routeName = '/mencari-pembeli';
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => MatchingSearchViewModel(rencana: rencana),
+      create: (_) => MatchingSearchViewModel(
+        role: role,
+        rencana: rencana,
+      ),
       child: const _MatchingSearchBody(),
     );
   }
@@ -39,7 +49,12 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
     _navigated = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => MatchingResultPage(result: vm.result!)),
+        MaterialPageRoute(
+          builder: (_) => MatchingResultPage(
+            role: vm.role,
+            result: vm.result!,
+          ),
+        ),
       );
     });
   }
@@ -49,8 +64,13 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
     final vm = context.watch<MatchingSearchViewModel>();
     _navigateWhenDone(vm);
 
+    final Color bgColor =
+        vm.isPetani ? AppColors.lightgreen : AppColors.lightorange;
+    final Color primaryColor =
+        vm.isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
+
     return Scaffold(
-      backgroundColor: AppColors.lightgreen,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -60,14 +80,25 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
               SizedBox(height: 16.h),
               KembaliPillButton(onTap: () => Navigator.of(context).maybePop()),
               SizedBox(height: 60.h),
-              Center(child: PulsingRings(emoji: vm.rencana.komoditasEmoji)),
+              Center(
+                child: PulsingRings(
+                  emoji: vm.rencana.komoditasEmoji,
+                  color: primaryColor,
+                ),
+              ),
               SizedBox(height: 32.h),
               SizedBox(
                 width: double.infinity,
                 child: Text(
-                  'Sedang mencarikan pembeli...',
+                  vm.isPetani
+                      ? 'Sedang mencarikan pembeli...'
+                      : 'Sedang mencarikan petani...',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 19.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                    fontSize: 19.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               SizedBox(height: 20.h),
@@ -77,7 +108,7 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
                   height: 6.h,
                   child: LinearProgressIndicator(
                     backgroundColor: AppColors.borderDefault,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.greenprimary),
+                    valueColor: AlwaysStoppedAnimation(primaryColor),
                   ),
                 ),
               ),
@@ -90,12 +121,18 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
                     vm.statusMessage,
                     key: ValueKey(vm.statusMessage),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ),
               const Spacer(),
-              MatchingMiniSummaryCard(rencana: vm.rencana),
+              MatchingMiniSummaryCard(
+                rencana: vm.rencana,
+                role: vm.role,
+              ),
               SizedBox(height: 20.h),
             ],
           ),
