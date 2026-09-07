@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import '../model/pasar.dart';
 
 enum PasarLoadState { loading, loaded, error }
 
 class PasarViewModel extends ChangeNotifier {
-  PasarViewModel() {
+  final UserRole role;
+
+  PasarViewModel({required this.role}) {
     fetchPasarData();
   }
 
@@ -28,7 +31,7 @@ class PasarViewModel extends ChangeNotifier {
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
 
-  final int currentNavIndex = 1;
+  int get currentNavIndex => 1;
 
   Future<void> fetchPasarData() async {
     _state = PasarLoadState.loading;
@@ -210,23 +213,77 @@ class PasarViewModel extends ChangeNotifier {
     Navigator.pushNamed(context, '/pengaturan');
   }
 
-  void onNavTap(BuildContext context, int index) {
-    if (index == currentNavIndex) return;
+ void onNavTap(BuildContext context, int index) {
+  if (index == currentNavIndex) return;
+
+  if (role == UserRole.petani) {
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home-petani');
+        Navigator.pushReplacementNamed(
+          context, 
+          '/home-petani', 
+          arguments: role,
+        );
         break;
       case 1:
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/rencana-panen');
+        Navigator.pushReplacementNamed(
+          context, 
+          '/rencana-panen', 
+          arguments: role,
+        );
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/transaksi');
+        Navigator.pushReplacementNamed(
+          context, 
+          '/transaksi', 
+          arguments: role,
+        );
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/profil');
+        Navigator.pushReplacementNamed(
+          context, 
+          '/profil', 
+          arguments: role,
+        );
+        break;
+    }
+  } else {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(
+          context, 
+          '/home-pembeli', 
+          arguments: role,
+        );
+        break;
+      case 1:
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(
+          context, 
+          '/permintaan-saya', 
+          arguments: role,
+        );
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(
+          context, 
+          '/transaksi-pembeli', 
+          arguments: role,
+        );
+        break;
+      case 4:
+        Navigator.pushReplacementNamed(
+          context, 
+          '/profil-pembeli', 
+          arguments: role,
+        );
         break;
     }
   }
+}
+
+ 
 }

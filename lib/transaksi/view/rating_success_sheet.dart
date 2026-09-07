@@ -1,5 +1,6 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/home/view/home_page.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -24,10 +25,13 @@ class _RatingSuccessContentState extends State<_RatingSuccessContent> {
     super.initState();
     Future.delayed(const Duration(milliseconds: 3000), () {
       if (mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(builder: (context) => const HomeView()), 
-  (route) => false,
-);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) =>
+                const HomeView(role: UserRole.petani), 
+          ),
+          (route) => false,
+        );
       }
     });
   }
@@ -53,7 +57,10 @@ class _RatingSuccessContentState extends State<_RatingSuccessContent> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [AppColors.amberAccent.withOpacity(0.2), Colors.transparent],
+                  colors: [
+                    AppColors.amberAccent.withOpacity(0.2),
+                    Colors.transparent,
+                  ],
                 ),
               ),
               child: Container(
@@ -62,7 +69,11 @@ class _RatingSuccessContentState extends State<_RatingSuccessContent> {
                   color: AppColors.amberAccent,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_rounded, color: Colors.white, size: 28),
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
             ),
             SizedBox(height: 16.h),

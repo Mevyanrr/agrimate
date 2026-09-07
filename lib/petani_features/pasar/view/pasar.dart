@@ -1,20 +1,23 @@
-import 'package:agrimate/core/appcolor.dart';
-import 'package:agrimate/core/widget/navbar_petani.dart';
-import 'package:agrimate/petani_features/pasar/widget/buyer_reqcard.dart';
-import 'package:agrimate/core/widget/appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:agrimate/core/appcolor.dart';
+import 'package:agrimate/core/widget/appbar.dart';
+import 'package:agrimate/core/widget/navbar_petani.dart';
+import 'package:agrimate/role_selection/model/role.dart';
+import 'package:agrimate/petani_features/pasar/widget/buyer_reqcard.dart';
 import '../model/pasar.dart';
 import '../viewmodel/pasar_vm.dart';
 
 class PasarView extends StatelessWidget {
-  const PasarView({super.key});
+  final UserRole role;
+
+  const PasarView({super.key, this.role = UserRole.petani});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PasarViewModel(),
+    return ChangeNotifierProvider<PasarViewModel>(
+      create: (_) => PasarViewModel(role: role),
       child: const _PasarBody(),
     );
   }
@@ -25,13 +28,16 @@ class _PasarBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final vm = context.watch<PasarViewModel>();
+    final isPetani = vm.role == UserRole.petani;
+    final accentColor = isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
       bottomNavigationBar: AppBottomNav(
         currentIndex: vm.currentNavIndex,
-        accentColor: AppColors.greenprimary,
+        accentColor: accentColor,
         onTap: (index) => vm.onNavTap(context, index),
       ),
       body: SafeArea(
@@ -39,8 +45,8 @@ class _PasarBody extends StatelessWidget {
         child: Column(
           children: [
             HomeAppBar(
-              roleLabel: 'Petani',
-              accentColor: AppColors.greenprimary,
+              roleLabel: isPetani ? 'Petani' : 'Pembeli',
+              accentColor: accentColor,
               onNotificationTap: () => vm.onNotificationPressed(context),
               onSettingsTap: () => vm.onSettingsPressed(context),
             ),
@@ -52,7 +58,7 @@ class _PasarBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Cari Pembeli',
+                    isPetani ? 'Cari Pembeli' : 'Pasar Komoditas',
                     style: TextStyle(
                       fontSize: 19.sp,
                       fontWeight: FontWeight.bold,
@@ -62,39 +68,43 @@ class _PasarBody extends StatelessWidget {
                   SizedBox(height: 12.h),
                   _SearchField(
                     initialValue: vm.searchQuery,
+                    accentColor: accentColor,
                     onChanged: vm.setSearchQuery,
                   ),
                   SizedBox(height: 12.h),
                   _CommodityChips(
                     filters: vm.commodityFilters,
                     selectedId: vm.selectedCommodityId,
+                    accentColor: accentColor,
                     onSelected: vm.selectCommodity,
                   ),
                   SizedBox(height: 14.h),
                   _TimelineTabs(
                     selected: vm.selectedTimeline,
+                    accentColor: accentColor,
                     onSelected: vm.selectTimeline,
                   ),
                 ],
               ),
             ),
             Container(height: 1, color: AppColors.borderDefault),
-            Expanded(child: _buildContent(context, vm)),
+            Expanded(child: _buildContent(context, vm, accentColor)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, PasarViewModel vm) {
+  Widget _buildContent(BuildContext context, PasarViewModel vm, Color accentColor) {
     if (vm.state == PasarLoadState.loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.greenprimary),
+      return Center(
+        child: CircularProgressIndicator(color: accentColor),
       );
     }
     if (vm.state == PasarLoadState.error) {
       return _ErrorState(
         message: vm.errorMessage ?? 'Terjadi kesalahan',
+        accentColor: accentColor,
         onRetry: vm.fetchPasarData,
       );
     }
@@ -102,7 +112,7 @@ class _PasarBody extends StatelessWidget {
     final requests = vm.filteredRequests;
 
     return RefreshIndicator(
-      color: AppColors.greenprimary,
+      color: accentColor,
       onRefresh: vm.onRefresh,
       child: requests.isEmpty
           ? _EmptyState(query: vm.searchQuery)
@@ -116,7 +126,7 @@ class _PasarBody extends StatelessWidget {
                 return BuyerRequestCard(
                   request: request,
                   onDetailTap: () =>
-                      _showBuyerRequestDetailSheet(context, request),
+                      _showBuyerRequestDetailSheet(context, request, accentColor),
                   onApplyTap: () => vm.onApplyPressed(request),
                 );
               },
@@ -127,18 +137,27 @@ class _PasarBody extends StatelessWidget {
 
 class _SearchField extends StatefulWidget {
   final String initialValue;
+  final Color accentColor;
   final ValueChanged<String> onChanged;
 
-  const _SearchField({required this.initialValue, required this.onChanged});
+  const _SearchField({
+    required this.initialValue,
+    required this.accentColor,
+    required this.onChanged,
+  });
 
   @override
   State<_SearchField> createState() => _SearchFieldState();
 }
 
 class _SearchFieldState extends State<_SearchField> {
-  late final TextEditingController _controller = TextEditingController(
-    text: widget.initialValue,
-  );
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
 
   @override
   void dispose() {
@@ -165,15 +184,15 @@ class _SearchFieldState extends State<_SearchField> {
         contentPadding: EdgeInsets.symmetric(vertical: 12.h),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.r),
-          borderSide: BorderSide(color: AppColors.borderDefault),
+          borderSide: const BorderSide(color: AppColors.borderDefault),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.r),
-          borderSide: BorderSide(color: AppColors.borderDefault),
+          borderSide: const BorderSide(color: AppColors.borderDefault),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.r),
-          borderSide: BorderSide(color: AppColors.greenprimary),
+          borderSide: BorderSide(color: widget.accentColor),
         ),
       ),
     );
@@ -183,11 +202,13 @@ class _SearchFieldState extends State<_SearchField> {
 class _CommodityChips extends StatelessWidget {
   final List<CommodityFilterModel> filters;
   final String selectedId;
+  final Color accentColor;
   final ValueChanged<String> onSelected;
 
   const _CommodityChips({
     required this.filters,
     required this.selectedId,
+    required this.accentColor,
     required this.onSelected,
   });
 
@@ -208,12 +229,10 @@ class _CommodityChips extends StatelessWidget {
               alignment: Alignment.center,
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               decoration: BoxDecoration(
-                color: selected ? AppColors.greenprimary : Colors.white,
+                color: selected ? accentColor : Colors.white,
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: selected
-                      ? AppColors.greenprimary
-                      : AppColors.borderDefault,
+                  color: selected ? accentColor : AppColors.borderDefault,
                 ),
               ),
               child: Text(
@@ -234,9 +253,14 @@ class _CommodityChips extends StatelessWidget {
 
 class _TimelineTabs extends StatelessWidget {
   final PasarTimelineFilter selected;
+  final Color accentColor;
   final ValueChanged<PasarTimelineFilter> onSelected;
 
-  const _TimelineTabs({required this.selected, required this.onSelected});
+  const _TimelineTabs({
+    required this.selected,
+    required this.accentColor,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -252,9 +276,7 @@ class _TimelineTabs extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: isSelected
-                        ? AppColors.greenprimary
-                        : Colors.transparent,
+                    color: isSelected ? accentColor : Colors.transparent,
                     width: 2,
                   ),
                 ),
@@ -264,9 +286,7 @@ class _TimelineTabs extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12.5.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected
-                      ? AppColors.greenprimary
-                      : AppColors.textSecondary,
+                  color: isSelected ? accentColor : AppColors.textSecondary,
                 ),
               ),
             ),
@@ -325,9 +345,14 @@ class _EmptyState extends StatelessWidget {
 
 class _ErrorState extends StatelessWidget {
   final String message;
+  final Color accentColor;
   final VoidCallback onRetry;
 
-  const _ErrorState({required this.message, required this.onRetry});
+  const _ErrorState({
+    required this.message,
+    required this.accentColor,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -348,9 +373,7 @@ class _ErrorState extends StatelessWidget {
           SizedBox(height: 12.h),
           ElevatedButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.greenprimary,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: accentColor),
             child: const Text(
               'Coba Lagi',
               style: TextStyle(color: Colors.white),
@@ -365,6 +388,7 @@ class _ErrorState extends StatelessWidget {
 void _showBuyerRequestDetailSheet(
   BuildContext context,
   BuyerRequestModel request,
+  Color accentColor,
 ) {
   final vm = context.read<PasarViewModel>();
 
@@ -376,6 +400,7 @@ void _showBuyerRequestDetailSheet(
       return _BuyerRequestDetailSheet(
         requestId: request.id,
         initialRequest: request,
+        accentColor: accentColor,
         onApply: (current) async {
           await vm.onApplyPressed(current);
         },
@@ -387,11 +412,13 @@ void _showBuyerRequestDetailSheet(
 class _BuyerRequestDetailSheet extends StatelessWidget {
   final String requestId;
   final BuyerRequestModel initialRequest;
+  final Color accentColor;
   final Future<void> Function(BuyerRequestModel) onApply;
 
   const _BuyerRequestDetailSheet({
     required this.requestId,
     required this.initialRequest,
+    required this.accentColor,
     required this.onApply,
   });
 
@@ -411,6 +438,7 @@ class _BuyerRequestDetailSheet extends StatelessWidget {
     return Consumer<PasarViewModel>(
       builder: (context, vm, _) {
         final request = vm.getRequestById(requestId) ?? initialRequest;
+        final isPetani = vm.role == UserRole.petani;
 
         return Container(
           padding: EdgeInsets.fromLTRB(
@@ -449,7 +477,7 @@ class _BuyerRequestDetailSheet extends StatelessWidget {
                     height: 56.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.lightgreen,
+                      color: accentColor.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Text(
@@ -514,7 +542,7 @@ class _BuyerRequestDetailSheet extends StatelessWidget {
               _DetailRow(
                 label: 'Budget',
                 valueText: 'Rp ${_formatRupiah(request.pricePerKg)}/kg',
-                valueColor: AppColors.greenprimary,
+                valueColor: accentColor,
                 showDivider: false,
               ),
               SizedBox(height: 18.h),
@@ -536,38 +564,41 @@ class _BuyerRequestDetailSheet extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: request.isApplied
-                      ? null
-                      : () async {
-                          await onApply(request);
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: request.isApplied
-                        ? AppColors.lightgreen
-                        : AppColors.greenprimary,
-                    disabledBackgroundColor: AppColors.lightgreen,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
+              // Tombol Aksi (Khusus Petani yang dapat mengajukan penawaran)
+              if (isPetani)
+                SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: ElevatedButton(
+                    onPressed: request.isApplied
+                        ? null
+                        : () async {
+                            final navigator = Navigator.of(context);
+                            await onApply(request);
+                            navigator.pop();
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: request.isApplied
+                          ? AppColors.lightgreen
+                          : accentColor,
+                      disabledBackgroundColor: AppColors.lightgreen,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    request.isApplied ? 'Sudah Diajukan' : 'Ajukan Penawaran →',
-                    style: TextStyle(
-                      color: request.isApplied
-                          ? AppColors.greenprimary
-                          : Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+                    child: Text(
+                      request.isApplied ? 'Sudah Diajukan' : 'Ajukan Penawaran →',
+                      style: TextStyle(
+                        color: request.isApplied
+                            ? AppColors.greenprimary
+                            : Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         );

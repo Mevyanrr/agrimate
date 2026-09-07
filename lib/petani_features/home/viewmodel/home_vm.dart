@@ -1,9 +1,13 @@
+import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 
 enum HomeLoadState { loading, loaded, error }
 
 class HomeViewModel extends ChangeNotifier {
+  final UserRole role;
+
   HomeLoadState _state = HomeLoadState.loading;
   HomeLoadState get state => _state;
 
@@ -16,35 +20,57 @@ class HomeViewModel extends ChangeNotifier {
   int _currentNavIndex = 0;
   int get currentNavIndex => _currentNavIndex;
 
-  HomeViewModel() {
+  HomeViewModel({required this.role}) {
     fetchHomeData();
   }
+
+  bool get isPetani => role == UserRole.petani;
+
+  Color get primaryColor =>
+      isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
+
+  Color get primaryLightColor =>
+      isPetani ? AppColors.lightgreen : AppColors.lightorange;
+
+  String get roleLabel => isPetani ? 'Petani' : 'Pembeli';
+  String get stat1Label => isPetani ? 'Rencana Aktif' : 'Kebutuhan Aktif';
+  String get stat2Label => isPetani ? 'Total Teralokasi' : 'Terpenuhi';
+  String get stat3Label => isPetani ? 'Transaksi Selesai' : 'Pesanan';
+
+  String get matchTitle => isPetani
+      ? 'Ada pembeli yang cocok, nih!'
+      : 'Ada petani yang cocok, nih!';
+
+  String get createButtonLabel =>
+      isPetani ? 'Buat Rencana Panen Baru' : 'Buat Kebutuhan Baru';
+
+  String get sectionTitle =>
+      isPetani ? 'Rencana Panen Terakhir' : 'Kebutuhan Terakhir';
 
   Future<void> fetchHomeData() async {
     _state = HomeLoadState.loading;
     notifyListeners();
 
     try {
+      await Future.delayed(const Duration(milliseconds: 600));
 
-      await Future.delayed(const Duration(milliseconds: 600)); 
-//dummy fe
       _data = HomeDataModel(
         profile: const FarmerProfileModel(
           photoUrl: null,
           name: 'Pak Tian',
           location: 'Malang, Jawa Timur',
         ),
-        summary: const HomeSummaryModel(
+        summary: HomeSummaryModel(
           activePlans: 5,
-          totalAllocatedKg: 850,
-          completedTransactions: 12,
+          totalAllocatedKg: isPetani ? 850 : 70, // format persen jika pembeli
+          completedTransactions: isPetani ? 12 : 8,
         ),
         buyerMatch: const BuyerMatchModel(matchCount: 1),
         recentPlans: const [
           HarvestPlanModel(
             id: 'plan_1',
-            commodityName: 'Tomat',
-            commodityEmoji: '🍅',
+            commodityName: 'Kentang',
+            commodityEmoji: '🥔',
             dateRangeLabel: '25 - 30 Sep 2026',
             totalWeightKg: 500,
             allocatedWeightKg: 300,
@@ -52,21 +78,12 @@ class HomeViewModel extends ChangeNotifier {
           ),
           HarvestPlanModel(
             id: 'plan_2',
-            commodityName: 'Jagung',
-            commodityEmoji: '🌽',
-            dateRangeLabel: '25 - 30 Sep 2026',
-            totalWeightKg: 400,
-            allocatedWeightKg: 120,
-            hasMatch: false,
-          ),
-          HarvestPlanModel(
-            id: 'plan_3',
-            commodityName: 'Bayam',
-            commodityEmoji: '🥬',
+            commodityName: 'Tomat',
+            commodityEmoji: '🍅',
             dateRangeLabel: '25 - 30 Sep 2026',
             totalWeightKg: 500,
             allocatedWeightKg: 0,
-            hasMatch: true,
+            hasMatch: false,
           ),
         ],
       );
@@ -82,27 +99,36 @@ class HomeViewModel extends ChangeNotifier {
   Future<void> onRefresh() => fetchHomeData();
 
   void onNavTap(BuildContext context, int index) {
-    if (index == _currentNavIndex) return;
-    _currentNavIndex = index;
-    notifyListeners();
+  if (index == _currentNavIndex) return;
+  _currentNavIndex = index;
+  notifyListeners();
 
-    switch (index) {
-      case 0:
-        break; 
-      case 1:
-        Navigator.pushNamed(context, '/pasar');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/rencana-panen');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/transaksi');
-        break;
-      case 4:
-        Navigator.pushNamed(context, '/profil');
-        break;
-    }
+  switch (index) {
+    case 0:
+      final targetHome = (role == UserRole.petani) ? '/home-petani' : '/home-pembeli';
+      Navigator.pushReplacementNamed(context, targetHome, arguments: role); 
+      break;
+    case 1:
+      Navigator.pushReplacementNamed(
+        context, 
+        '/pasar', 
+        arguments: role,
+      );
+      break;
+    case 2:
+      final targetMenu = (role == UserRole.petani) ? '/rencana-panen' : '/permintaan-saya';
+      Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
+      break;
+    case 3:
+      final targetTransaksi = (role == UserRole.petani) ? '/transaksi' : '/transaksi-pembeli';
+      Navigator.pushReplacementNamed(context, targetTransaksi, arguments: role);
+      break;
+    case 4:
+      final targetProfil = (role == UserRole.petani) ? '/profil' : '/profil-pembeli';
+      Navigator.pushReplacementNamed(context, targetProfil, arguments: role);
+      break;
   }
+}
 
   void onNotificationPressed(BuildContext context) {
     Navigator.pushNamed(context, '/notifikasi');
