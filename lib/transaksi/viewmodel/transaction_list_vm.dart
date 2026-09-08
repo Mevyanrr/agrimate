@@ -172,7 +172,7 @@ class TransactionListViewModel extends ChangeNotifier {
       );
       break;
     case 2:
-      final targetMenu = (role == UserRole.petani) ? '/rencana-panen' : '/permintaan-saya';
+      final targetMenu = (role == UserRole.petani) ? '/rencana-panen' : '/rencana-panen-pembeli';
       Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
       break;
     case 3:
