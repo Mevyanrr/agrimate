@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
             title: 'MyApp',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(useMaterial3: true),
-            initialRoute: '/role-selection',
+            initialRoute: '/home-petani',
             routes: {
               '/splash1': (context) => const SplashPage1(),
               '/splash2': (context) => const SplashPage2(),

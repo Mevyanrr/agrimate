@@ -1,27 +1,36 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/rencana_panen/model/rencana_panen.dart';
 import 'package:agrimate/petani_features/rencana_panen/viewmodel/rencana_panen_vm.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
 class Page1KomoditasView extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Color accentColor;
-  final Color accentColorLight;
+  final UserRole role;
 
   const Page1KomoditasView({
     super.key,
-    this.title = 'Mau Panen Apa?',
-    this.subtitle = 'Pilih jenis komoditas',
-    this.accentColor = AppColors.greenprimary,
-    this.accentColorLight = AppColors.lightgreen,
+    this.role = UserRole.petani,
   });
+
+  static const KomoditasModel itemLainnya = KomoditasModel(
+    id: 'lainnya',
+    name: 'Lainnya',
+    emoji: '📝',
+  );
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<RencanaViewModel>();
+
+    final isPembeli = role == UserRole.pembeli;
+    final title = isPembeli ? 'Butuh komoditas apa?' : 'Mau panen apa?';
+    final accentColor = isPembeli ? AppColors.orangeprimary : AppColors.greenprimary;
+    final accentColorLight = isPembeli ? AppColors.lightorange : AppColors.lightgreen;
+
+    final displayList = [...vm.komoditasList, itemLainnya];
+    final isLainnyaSelected = vm.selectedKomoditas?.id == 'lainnya';
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 16.h),
@@ -30,18 +39,23 @@ class Page1KomoditasView extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           SizedBox(height: 4.h),
           Text(
-            subtitle,
+            'Pilih jenis komoditas',
             style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
           ),
           SizedBox(height: 18.h),
+
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: vm.komoditasList.length,
+            itemCount: displayList.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 12.h,
@@ -49,8 +63,9 @@ class Page1KomoditasView extends StatelessWidget {
               childAspectRatio: 2.5,
             ),
             itemBuilder: (context, index) {
-              final item = vm.komoditasList[index];
-              final selected = vm.selectedKomoditas == item;
+              final item = displayList[index];
+              final selected = vm.selectedKomoditas?.id == item.id;
+
               return _KomoditasCard(
                 komoditas: item,
                 selected: selected,
@@ -60,6 +75,40 @@ class Page1KomoditasView extends StatelessWidget {
               );
             },
           ),
+
+          if (isLainnyaSelected) ...[
+            SizedBox(height: 20.h),
+            Text(
+              'Nama Komoditas Lainnya',
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            TextFormField(
+              controller: vm.customKomoditasController, 
+              onChanged: (val) => vm.setCustomKomoditasName(val),
+              decoration: InputDecoration(
+                hintText: 'Contoh: Jahe Merah',
+                hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: AppColors.borderDefault),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: AppColors.borderDefault),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: accentColor, width: 1.5),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -107,7 +156,7 @@ class _KomoditasCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: selected ? accentColor : AppColors.textPrimary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

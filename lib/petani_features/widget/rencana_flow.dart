@@ -37,6 +37,11 @@ class _RencanaKebutuhanFlowBody extends StatelessWidget {
     final vm = context.watch<RencanaViewModel>();
     final isLastStep = vm.currentStep == RencanaViewModel.totalSteps - 1;
 
+    // Menentukan nama komoditas akhir (handling input manual "Lainnya")
+    final selectedKomoditasName = vm.selectedKomoditas?.id == 'lainnya'
+        ? vm.customKomoditasName
+        : vm.selectedKomoditas?.name ?? '';
+
     return Scaffold(
       backgroundColor: AppColors.scaffoldGrey,
       body: SafeArea(
@@ -64,26 +69,23 @@ class _RencanaKebutuhanFlowBody extends StatelessWidget {
               child: PageView(
                 controller: vm.pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: const [
+                children: [
                   Page1KomoditasView(
-                    title: 'Butuh komoditas apa?',
-                    subtitle: 'Pilih jenis komoditas',
-                    accentColor: AppColors.orangeprimary,
-                    accentColorLight: AppColors.lightorange,
+                    role: vm.role,
                   ),
-                  Page2KuantitasView(
+                  const Page2KuantitasView(
                     title: 'Butuh berapa kg?',
                     subtitle: 'Estimasi berat kebutuhan yang dibutuhkan',
                     accentColor: AppColors.orangeprimary,
                     accentColorLight: AppColors.lightorange,
                   ),
-                  Page3TanggalView(
+                  const Page3TanggalView(
                     title: 'Kapan butuhnya?',
                     accentColor: AppColors.orangeprimary,
                     accentColorLight: AppColors.lightorange,
                     accentColorDark: AppColors.darkorange,
                   ),
-                  Page4KonfirmasiView(
+                  const Page4KonfirmasiView(
                     confirmationMessage:
                         'Setelah diajukan, sistem kami akan mencocokkan kebutuhanmu dengan petani yang tersedia.',
                     accentColor: AppColors.orangeprimary,
@@ -114,7 +116,7 @@ class _RencanaKebutuhanFlowBody extends StatelessWidget {
                       builder: (_) => RencanaSuccessPage(
                         role: vm.role,
                         rencana: RencanaSummaryModel(
-                          komoditasName: vm.selectedKomoditas!.name,
+                          komoditasName: selectedKomoditasName,
                           komoditasEmoji: vm.selectedKomoditas!.emoji,
                           kuantitasKg: vm.kuantitas.toInt(),
                           tanggalMulai: vm.tanggalMulai!,

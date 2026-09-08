@@ -123,7 +123,6 @@ class RencanaPanenViewModel extends ChangeNotifier {
     }
   }
 
-  // Arahkan ke rute yang sesuai berdasarkan role pengguna
   void onAddPlanPressed(BuildContext context) {
     if (isPetani) {
       Navigator.pushNamed(context, '/tambah-rencana');
@@ -147,7 +146,9 @@ class RencanaPanenViewModel extends ChangeNotifier {
 
 class RencanaViewModel extends ChangeNotifier {
   RencanaViewModel({RencanaRepository? repository, required this.role})
-      : _repository = repository ?? RencanaRepositoryImpl();
+      : _repository = repository ?? RencanaRepositoryImpl() {
+    _initCommodities();
+  }
 
   final RencanaRepository _repository;
   final UserRole role;
@@ -159,21 +160,46 @@ class RencanaViewModel extends ChangeNotifier {
   int get currentStep => _currentStep;
 
   // PAGE 1 — Pilih Komoditas
-  final List<KomoditasModel> komoditasList = KomoditasData.list;
+  List<KomoditasModel> komoditasList = [];
   KomoditasModel? selectedKomoditas;
+
+  final TextEditingController customKomoditasController = TextEditingController();
+  String customKomoditasName = '';
+
+  void _initCommodities() {
+    komoditasList = List.from(KomoditasData.list);
+    notifyListeners();
+  }
 
   void selectKomoditas(KomoditasModel komoditas) {
     selectedKomoditas = komoditas;
+
+    if (komoditas.id != 'lainnya') {
+      customKomoditasController.clear();
+      customKomoditasName = '';
+    }
+
     notifyListeners();
-    _repository.saveDraft({'step': 1, 'komoditas_id': komoditas.id});
   }
 
-  bool get isPage1Valid => selectedKomoditas != null;
+  void setCustomKomoditasName(String value) {
+    customKomoditasName = value;
+    notifyListeners();
+  }
+
+  bool get isPage1Valid {
+    if (selectedKomoditas == null) return false;
+    if (selectedKomoditas?.id == 'lainnya') {
+      return customKomoditasName.trim().isNotEmpty;
+    }
+    return true;
+  }
 
   // PAGE 2 — Kuantitas (kg)
   static const double maxKuantitas = 10000;
   double kuantitas = 10;
   bool _kuantitasInteracted = false; 
+
   void setKuantitas(double value) {
     kuantitas = value.clamp(0, maxKuantitas);
     _kuantitasInteracted = true;
@@ -234,9 +260,13 @@ class RencanaViewModel extends ChangeNotifier {
     isSubmitting = true;
     notifyListeners();
 
+    final finalKomoditasName = selectedKomoditas?.id == 'lainnya'
+        ? customKomoditasName
+        : selectedKomoditas?.name;
+
     final payload = {
       'komoditas_id': selectedKomoditas?.id,
-      'komoditas_name': selectedKomoditas?.name,
+      'komoditas_name': finalKomoditasName,
       'kuantitas_kg': kuantitas.toInt(),
       'tanggal_mulai': tanggalMulai?.toIso8601String(),
       'tanggal_selesai': tanggalSelesai?.toIso8601String(),
@@ -287,6 +317,7 @@ class RencanaViewModel extends ChangeNotifier {
   @override
   void dispose() {
     pageController.dispose();
+    customKomoditasController.dispose(); 
     super.dispose();
   }
 
