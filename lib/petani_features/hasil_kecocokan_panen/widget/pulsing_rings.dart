@@ -1,4 +1,3 @@
-import 'package:agrimate/core/appcolor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -43,7 +42,7 @@ class _PulsingRingsState extends State<PulsingRings> with SingleTickerProviderSt
               Container(
                 width: size * 0.55,
                 height: size * 0.55,
-                decoration: const BoxDecoration(color: AppColors.greenprimary, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
                 alignment: Alignment.center,
                 child: Text(widget.emoji, style: TextStyle(fontSize: 40.sp)),
               ),
@@ -66,7 +65,7 @@ class _PulsingRingsState extends State<PulsingRings> with SingleTickerProviderSt
         height: maxSize * scale,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.greenprimary, width: 1.5),
+          border: Border.all(color: widget.color, width: 1.5), 
         ),
       ),
     );

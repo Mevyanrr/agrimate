@@ -54,7 +54,7 @@ class _RencanaSuccessPageState extends State<RencanaSuccessPage> {
   @override
   Widget build(BuildContext context) {
     final isPetani = widget.role == UserRole.petani;
-    final bgColor = isPetani ? AppColors.lightgreen : AppColors.lightorange;
+    final bgColor = AppColors.background;
     final primaryColor = isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
     final darkTextColor = isPetani ? AppColors.darkgreen : AppColors.darkorange;
 
@@ -67,6 +67,7 @@ class _RencanaSuccessPageState extends State<RencanaSuccessPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               KembaliPillButton(
+                role: widget.role,
                 onTap: () => Navigator.of(context).maybePop(),
               ),
               SizedBox(height: 32.h),
@@ -119,7 +120,7 @@ class _RencanaSuccessPageState extends State<RencanaSuccessPage> {
                 ),
               ),
               SizedBox(height: 24.h),
-              RencanaSummaryTableCard(rencana: widget.rencana),
+              RencanaSummaryTableCard(rencana: widget.rencana, role: widget.role,),
               SizedBox(height: 14.h),
               Container(
                 width: double.infinity,
@@ -147,7 +148,7 @@ class _RencanaSuccessPageState extends State<RencanaSuccessPage> {
                       child: Text(
                         isPetani
                             ? 'Sistem AgriMate sedang mencarikan kebutuhan yang sesuai dengan rencana panen Anda. Kami akan memberitahu Anda segera.'
-                            : 'Sistem AgriMate sedang mencarikan ketersediaan panen yang sesuai dengan kebutuhan Anda. Kami akan memberitahu Anda segera.', // ✅ Deskripsi info dinamis
+                            : 'Sistem AgriMate sedang mencarikan ketersediaan panen yang sesuai dengan kebutuhan Anda. Kami akan memberitahu Anda segera.', 
                         style: TextStyle(
                           fontSize: 13.sp,
                           color: darkTextColor, 

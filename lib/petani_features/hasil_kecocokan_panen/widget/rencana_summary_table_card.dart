@@ -1,11 +1,18 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/hasil_kecocokan_panen/model/rencana_summary_model.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class RencanaSummaryTableCard extends StatelessWidget {
   final RencanaSummaryModel rencana;
-  const RencanaSummaryTableCard({super.key, required this.rencana});
+  final UserRole role;
+
+  const RencanaSummaryTableCard({
+    super.key, 
+    required this.rencana,
+    required this.role,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +42,13 @@ class RencanaSummaryTableCard extends StatelessWidget {
               children: [
                 _row('Komoditas', rencana.komoditasName),
                 SizedBox(height: 14.h),
-                _row('Jumlah', '${rencana.kuantitasKg} kg', valueColor: AppColors.greenprimary),
+               _row(
+  'Jumlah', 
+  '${rencana.kuantitasKg} kg', 
+  valueColor: role == UserRole.pembeli 
+      ? AppColors.orangeprimary 
+      : AppColors.greenprimary,
+),
                 SizedBox(height: 14.h),
                 _row('Periode', rencana.periodeLabel),
                 SizedBox(height: 14.h),

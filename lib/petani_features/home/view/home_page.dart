@@ -112,7 +112,7 @@ class _HomeBody extends StatelessWidget {
                                 _CreatePlanButton(
                                   label: vm.createButtonLabel,
                                   primaryColor: vm.primaryColor,
-                                  onTap: () => vm.onCreatePlanPressed(context),
+                                  role: vm.role,
                                 ),
                                 SizedBox(height: 24.h),
                                 _SectionHeader(
@@ -127,8 +127,8 @@ class _HomeBody extends StatelessWidget {
                                     padding: EdgeInsets.only(bottom: 12.h),
                                     child: HarvestPlanCard(
                                       plan: plan,
-                                      onTap: () =>
-                                          vm.onPlanCardPressed(context, plan),
+                                      onTap: () => vm.onPlanCardPressed(context, plan),
+                                      role: vm.role
                                     ),
                                   );
                                 }),
@@ -399,12 +399,12 @@ class _MatchCard extends StatelessWidget {
 class _CreatePlanButton extends StatelessWidget {
   final String label;
   final Color primaryColor;
-  final VoidCallback onTap;
+  final UserRole role;
 
   const _CreatePlanButton({
     required this.label,
     required this.primaryColor,
-    required this.onTap,
+    required this.role,
   });
 
   @override
@@ -413,7 +413,13 @@ class _CreatePlanButton extends StatelessWidget {
       height: 52.h,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onTap,
+        onPressed: () {
+          final routeName = role == UserRole.petani
+              ? '/tambah-rencana'
+              : '/rencana-kebutuhan-baru';
+
+          Navigator.pushNamed(context, routeName);
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           elevation: 0,

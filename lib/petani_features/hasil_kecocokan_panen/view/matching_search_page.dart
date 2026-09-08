@@ -65,7 +65,7 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
     _navigateWhenDone(vm);
 
     final Color bgColor =
-        vm.isPetani ? AppColors.lightgreen : AppColors.lightorange;
+        AppColors.background;
     final Color primaryColor =
         vm.isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
 
@@ -78,7 +78,9 @@ class _MatchingSearchBodyState extends State<_MatchingSearchBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.h),
-              KembaliPillButton(onTap: () => Navigator.of(context).maybePop()),
+              KembaliPillButton(
+                role: vm.role,
+                onTap: () => Navigator.of(context).maybePop()),
               SizedBox(height: 60.h),
               Center(
                 child: PulsingRings(

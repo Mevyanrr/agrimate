@@ -1,13 +1,15 @@
 import 'package:agrimate/core/appcolor.dart';
 import 'package:agrimate/petani_features/home/model/home.dart';
+import 'package:agrimate/role_selection/model/role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HarvestPlanCard extends StatelessWidget {
   final HarvestPlanModel plan;
   final VoidCallback onTap;
+  final UserRole role;
 
-  const HarvestPlanCard({super.key, required this.plan, required this.onTap});
+  const HarvestPlanCard({super.key, required this.plan, required this.onTap, required this.role});
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +93,9 @@ class HarvestPlanCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.greenprimary,
+                          color: role == UserRole.pembeli
+                              ? AppColors.orangeprimary
+                              : AppColors.greenprimary,
                         ),
                       ),
                     ],

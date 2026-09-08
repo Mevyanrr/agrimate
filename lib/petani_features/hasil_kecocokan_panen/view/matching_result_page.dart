@@ -26,13 +26,13 @@ class MatchingResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => MatchingResultViewModel(result: result),
-      child: _MatchingResultBody(role: role), 
+      child: _MatchingResultBody(role: role),
     );
   }
 }
 
 class _MatchingResultBody extends StatelessWidget {
-  final UserRole role; 
+  final UserRole role;
 
   const _MatchingResultBody({required this.role});
 
@@ -53,11 +53,14 @@ class _MatchingResultBody extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.borderDefault),
+                ),
               ),
               child: Row(
                 children: [
                   KembaliPillButton(
+                    role: role,
                     onTap: () => Navigator.of(context).maybePop(),
                   ),
                   SizedBox(width: 12.w),
@@ -72,7 +75,10 @@ class _MatchingResultBody extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 5.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.purpleAccentLight,
                       borderRadius: BorderRadius.circular(20.r),
@@ -140,15 +146,26 @@ class _MatchingResultBody extends StatelessWidget {
                     child: MatchingBottomActions(
                       role: role,
                       onLihatKebutuhan: () {
-                        Navigator.of(context).pushNamed(
-                          isPetani
-                              ? '/rencana-panen'
-                              : '/rencana-panen-pembeli',
+                        final routeName = role == UserRole.petani
+                            ? '/transaksi'
+                            : '/transaksi-pembeli';
+
+                        Navigator.pushNamed(
+                          context,
+                          routeName,
                           arguments: role,
                         );
                       },
                       onKembaliBeranda: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        final homeRoute = role == UserRole.petani
+                            ? '/home-petani'
+                            : '/home-pembeli';
+
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          homeRoute,
+                          (route) => false,
+                        );
                       },
                     ),
                   ),
