@@ -138,7 +138,7 @@ class _LoginBody extends StatelessWidget {
                   controller: vm.identifierController,
                   keyboardType: TextInputType.emailAddress,
                   validator: vm.validateIdentifier,
-                  decoration: _inputDecoration(hint: 'Enter Input'),
+                  decoration: _inputDecoration(hint: 'Enter Input', focusedColor: vm.accentColor),
                 ),
                 SizedBox(height: 16.h),
 
@@ -148,7 +148,7 @@ class _LoginBody extends StatelessWidget {
                   controller: vm.passwordController,
                   obscureText: vm.obscurePassword,
                   validator: vm.validatePassword,
-                  decoration: _inputDecoration(hint: 'Enter Input').copyWith(
+                  decoration: _inputDecoration(hint: 'Enter Input', focusedColor: vm.accentColor).copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(
                         vm.obscurePassword
@@ -247,7 +247,10 @@ class _LoginBody extends StatelessWidget {
     );
   }
 
-  InputDecoration _inputDecoration({required String hint}) {
+  InputDecoration _inputDecoration({
+    required String hint, 
+    required Color focusedColor,
+  }) {
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
@@ -262,7 +265,7 @@ class _LoginBody extends StatelessWidget {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),
-        borderSide: const BorderSide(color: AppColors.textPrimary),
+        borderSide: BorderSide(color: focusedColor, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12.r),

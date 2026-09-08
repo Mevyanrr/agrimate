@@ -99,6 +99,7 @@ class _RencanaPanenBody extends StatelessWidget {
                 return HarvestPlanCard(
                   plan: plan,
                   onTap: () => vm.onPlanCardPressed(context, plan),
+                  role: vm.role,
                 );
               },
             ),

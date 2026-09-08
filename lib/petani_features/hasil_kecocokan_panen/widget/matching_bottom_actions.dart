@@ -19,7 +19,7 @@ class MatchingBottomActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPetani = role == UserRole.petani;
     final primaryColor = isPetani ? AppColors.greenprimary : AppColors.orangeprimary;
-    final buttonText = isPetani ? 'Lihat Rencana Saya' : 'Lihat Kebutuhan Saya';
+    final buttonText = isPetani ? 'Lihat Transaksi Saya' : 'Lihat Transaksi Saya';
 
     return Container(
       width: double.infinity,
