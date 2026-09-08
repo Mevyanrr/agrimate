@@ -9,6 +9,7 @@ enum TransactionLoadState { loading, loaded, error }
 class TransactionListViewModel extends ChangeNotifier {
   final UserRole role;
   final BackendDependencies _backend = BackendDependencies.create();
+  int _currentNavIndex = 3;
 
   TransactionListViewModel({required this.role}) {
     fetchTransactions();
@@ -85,21 +86,29 @@ class TransactionListViewModel extends ChangeNotifier {
 
   Future<void> onRefresh() => fetchTransactions();
 
-  void onNavTap(BuildContext context, int index) {
+    void onNavTap(BuildContext context, int index) {
+    if (index == _currentNavIndex) return;
+    _currentNavIndex = index;
+    notifyListeners();
+
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(
-          context,
-          isPetani ? '/home-petani' : '/home-pembeli',
-        );
+        final targetHome = (role == UserRole.petani)
+            ? '/home-petani'
+            : '/home-pembeli';
+        Navigator.pushReplacementNamed(context, targetHome, arguments: role);
         break;
       case 1:
-        if (isPetani) Navigator.pushReplacementNamed(context, '/pasar');
+        Navigator.pushReplacementNamed(context, '/pasar', arguments: role);
         break;
       case 2:
-        if (isPetani) Navigator.pushReplacementNamed(context, '/rencana-panen');
+        final targetMenu = (role == UserRole.petani)
+            ? '/rencana-panen'
+            : '/rencana-panen-pembeli';
+        Navigator.pushReplacementNamed(context, targetMenu, arguments: role);
         break;
       case 3:
+        Navigator.pushReplacementNamed(context, '/transaksi', arguments: role);
         break;
       case 4:
         Navigator.pushReplacementNamed(context, '/profil', arguments: role);
