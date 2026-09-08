@@ -64,12 +64,9 @@ class _RencanaKebutuhanFlowBody extends StatelessWidget {
               child: PageView(
                 controller: vm.pageController,
                 physics: const NeverScrollableScrollPhysics(),
-                children: const [
+                children: [
                   Page1KomoditasView(
-                    title: 'Butuh komoditas apa?',
-                    subtitle: 'Pilih jenis komoditas',
-                    accentColor: AppColors.orangeprimary,
-                    accentColorLight: AppColors.lightorange,
+                    role: vm.role,
                   ),
                   Page2KuantitasView(
                     title: 'Butuh berapa kg?',

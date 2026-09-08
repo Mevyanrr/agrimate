@@ -192,6 +192,10 @@ class RencanaViewModel extends ChangeNotifier {
   List<KomoditasModel> komoditasList = [];
   KomoditasModel? selectedKomoditas;
 
+  final TextEditingController customKomoditasController =
+      TextEditingController();
+  String customKomoditasName = '';
+
   Future<void> _loadCommodities() async {
     final result = await BackendDependencies.create().commodityRepository
         .getCommodities();
@@ -211,11 +215,33 @@ class RencanaViewModel extends ChangeNotifier {
 
   void selectKomoditas(KomoditasModel komoditas) {
     selectedKomoditas = komoditas;
+
+    if (komoditas.id != 'lainnya') {
+      customKomoditasController.clear();
+      customKomoditasName = '';
+    }
+
     notifyListeners();
     _repository.saveDraft({'step': 1, 'komoditas_id': komoditas.id});
   }
 
-  bool get isPage1Valid => selectedKomoditas != null;
+  void setCustomKomoditasName(String value) {
+    customKomoditasName = value;
+    notifyListeners();
+    _repository.saveDraft({
+      'step': 1,
+      'komoditas_id': 'lainnya',
+      'komoditas_custom_name': value,
+    });
+  }
+
+  bool get isPage1Valid {
+    if (selectedKomoditas == null) return false;
+    if (selectedKomoditas?.id == 'lainnya') {
+      return customKomoditasName.trim().isNotEmpty;
+    }
+    return true;
+  }
 
   // PAGE 2 — Kuantitas (kg)
   static const double maxKuantitas = 10000;
